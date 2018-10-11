@@ -24,10 +24,7 @@ public class Robot {
     }
 
     public void setupDrivetrain() throws InterruptedException {
-        motorRight = motor(motorFRS, DcMotorSimple.Direction.FORWARD);
-        motorLeft = motor(motorFLS, DcMotorSimple.Direction.FORWARD);
 
-        motorDriveMode(EncoderMode.ON, motorFR, motorFL, motorBR, motorBL);
     }
 
 
