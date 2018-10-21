@@ -247,7 +247,7 @@ public class VuforiaRoverRuckus extends LinearOpMode {
          * This requires a Positive 90 degree rotation on the Y axis
          *
          * Next, translate the camera lens to where it is on the robot.
-         * In this example, it is centered (left to right), but 110 mm forward of the middle of the robot, and 200 mm above ground level.
+         * In this example, it is centered (left to right), but 110 mm forwarjd of the middle of the robot, and 200 mm above ground level.
          */
 
         final int CAMERA_FORWARD_DISPLACEMENT  = 110;   // eg: Camera is 110 mm in front of robot center
