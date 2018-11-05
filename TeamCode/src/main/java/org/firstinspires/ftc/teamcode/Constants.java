@@ -22,6 +22,12 @@ public class Constants {
     public static final double D_PAD_SPEED = 0.4;
     public static final double CRAWL_SPEED = 0.2;
 
+    //--------------------------------CONFIGURATION VALUES--------------------
+
+    public static final String motorRightS = "motorRight";
+    public static final String motorLeftS = "motorRight";
+
+
 
 
 

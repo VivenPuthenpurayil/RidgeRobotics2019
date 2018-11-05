@@ -12,8 +12,6 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 public class TennisTest extends LinearOpMode {
 
     public ElapsedTime runtime = new ElapsedTime();
-    DcMotor left, right;
-
 
     public void runOpMode() throws InterruptedException{
         left = motor("left", DcMotorSimple.Direction.FORWARD);
