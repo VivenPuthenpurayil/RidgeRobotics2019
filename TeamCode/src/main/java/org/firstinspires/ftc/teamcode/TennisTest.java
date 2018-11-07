@@ -9,32 +9,24 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 @Autonomous(name = "Tennis Ball Shoot", group = "Smart")
 
-public class TennisTest extends LinearOpMode {
+public class TennisTest extends AutonomousControl {
 
-    public ElapsedTime runtime = new ElapsedTime();
+    private ElapsedTime runtime = new ElapsedTime();
 
     public void runOpMode() throws InterruptedException{
-        left = motor("left", DcMotorSimple.Direction.FORWARD);
-        right = motor("right", DcMotorSimple.Direction.FORWARD);
-
+        setRob(new Rover(hardwareMap, Rover.setupType.drive));
+        setRuntime(runtime);
 
         waitForStart();
         runtime.reset();
 
 
         while (opModeIsActive()) {
-            left.setPower(1);
-            right.setPower(-1);
+            rob.motorLeft.setPower(1);
+            rob.motorRight.setPower(-1);
             sleep(10000);
 
         }
     }
 
-    public DcMotor motor(String name, DcMotor.Direction direction) throws InterruptedException {
-        DcMotor motor = hardwareMap.dcMotor.get(name);
-        motor.setDirection(DcMotor.Direction.FORWARD);
-        motor.setPower(0);
-
-        return motor;
-    }
 }

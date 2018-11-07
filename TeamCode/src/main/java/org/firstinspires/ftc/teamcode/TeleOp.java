@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.Range;
 
 import static org.firstinspires.ftc.teamcode.Constants.DEAD_ZONE_SIZE;
@@ -46,5 +47,13 @@ public abstract class TeleOp extends Central{
     public boolean validStick(double x, double y){
         return Math.pow(x, 2) + Math.pow(y, 2) >= Math.pow(DEAD_ZONE_SIZE, 2);
     }
+
+    public void setMotorPower(double power, DcMotor... motors){
+        for (DcMotor b :
+                motors) {
+            b.setPower(power);
+        }
+    }
+
 
 }

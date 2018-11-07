@@ -46,6 +46,7 @@ public class Rover extends LinearOpMode{
 
     DcMotor motorRight;
     DcMotor motorLeft;
+    DcMotor rack;
 
     public Rover(HardwareMap hardwareMap, setupType... setup) throws InterruptedException {
         this.hardwareMap = hardwareMap;
@@ -55,6 +56,8 @@ public class Rover extends LinearOpMode{
                     setupDrivetrain();
                     break;
 
+                case latching:
+                    setupLatching();
 
             }
         }
@@ -74,6 +77,11 @@ public class Rover extends LinearOpMode{
         motorDriveMode(EncoderMode.ON, motorRight, motorLeft);
     }
 
+    public void setupLatching() throws InterruptedException {
+        rack = motor(rackS, DcMotorSimple.Direction.FORWARD);
+
+        encoder(EncoderMode.ON, rack);
+    }
 
     //-----------------------HARDWARE SETUP FUNCTIONS---------------------------------------
     public DcMotor motor(String name, DcMotor.Direction direction) throws InterruptedException {
@@ -108,6 +116,23 @@ public class Rover extends LinearOpMode{
     public ModernRoboticsI2cRangeSensor ultrasonicSensor(String name) throws InterruptedException {
 
         return hardwareMap.get(ModernRoboticsI2cRangeSensor.class, name);
+    }
+
+    public void encoder(EncoderMode mode, DcMotor... motor) throws InterruptedException {
+        switch (mode) {
+            case ON:
+                for (DcMotor i : motor) {
+                    i.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                }
+                idle();
+                for (DcMotor i : motor) {
+                    i.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                }
+                break;
+            case OFF:
+                break;
+        }
+
     }
 
     public void motorDriveMode(EncoderMode mode, DcMotor... motor) throws InterruptedException {

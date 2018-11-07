@@ -33,6 +33,7 @@ public class DriveMode extends TeleOp {
 
                 if (yAxis1 >= Math.abs(xAxis1)) {
                     rob.motorLeft.setPower(fb);
+                    setMotorPower(fb);
 
                 } else if (yAxis1 <= -Math.abs(xAxis1)) {
                     rob.motorLeft.setPower(-fb);
@@ -53,6 +54,16 @@ public class DriveMode extends TeleOp {
                     }
             }else{
                 rob.motorRight.setPower(0);
+            }
+
+            if (gamepad1.a) {
+                rob.rack.setPower(0.4);
+            }
+            else if (gamepad1.y){
+                rob.rack.setPower(-0.4);
+            }
+            else {
+                rob.rack.setPower(0);
             }
 
 

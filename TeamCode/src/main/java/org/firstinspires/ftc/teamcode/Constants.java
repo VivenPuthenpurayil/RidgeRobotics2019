@@ -26,6 +26,7 @@ public class Constants {
 
     public static final String motorRightS = "motorRight";
     public static final String motorLeftS = "motorRight";
+    public static final String rackS = "motorRight";
 
 
 
