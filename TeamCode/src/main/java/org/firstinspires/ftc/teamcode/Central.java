@@ -11,6 +11,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.robot.Robot;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -26,7 +27,14 @@ import java.util.Arrays;
 public abstract class Central extends LinearOpMode {
     private ElapsedTime runtime = new ElapsedTime();
 
+    Rover rob;
 
 
+    public void setRob(Rover rob) {
+        this.rob = rob;
+    }
 
+    public void setRuntime(ElapsedTime runtime) {
+        this.runtime = runtime;
+    }
 }
