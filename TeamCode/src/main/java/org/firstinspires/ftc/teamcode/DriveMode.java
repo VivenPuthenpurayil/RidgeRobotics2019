@@ -10,14 +10,14 @@ import com.qualcomm.robotcore.util.Range;
 import static org.firstinspires.ftc.teamcode.Constants.*;
 
 
-@Autonomous(name = "Base Test", group = "Smart")
+@Autonomous(name = "DriveMode", group = "Smart")
 
 public class DriveMode extends TeleOp {
 
 
     ElapsedTime runtime = new ElapsedTime();
     public void runOpMode() throws InterruptedException{
-        setRob(new Rover(hardwareMap, Rover.setupType.drive));
+        setRob(new Rover(hardwareMap, Rover.setupType.drive, Rover.setupType.latching, Rover.setupType.mineralControl));
         setRuntime(runtime);
 
         waitForStart();
@@ -46,10 +46,10 @@ public class DriveMode extends TeleOp {
             if (validStick(xAxis2, yAxis2)) { //MAIN DIRECTIONS
 
                 if (yAxis2 >= Math.abs(xAxis2)) {
-                    rob.motorRight.setPower(-fb);
+                    rob.motorRight.setPower(-fb2);
 
                 } else if (yAxis2 <= -Math.abs(xAxis2)) {
-                    rob.motorRight.setPower(fb);
+                    rob.motorRight.setPower(fb2);
 
                     }
             }else{
@@ -57,14 +57,28 @@ public class DriveMode extends TeleOp {
             }
 
             if (gamepad1.a) {
-                rob.rack.setPower(0.4);
+                rob.rack.setPower(0.8);
             }
             else if (gamepad1.y){
-                rob.rack.setPower(-0.4);
+                rob.rack.setPower(-0.8);
             }
             else {
                 rob.rack.setPower(0);
             }
+
+            if (gamepad1.x){
+                rob.arm.setPower(0.9);
+
+            }
+            else if (gamepad1.b){
+                rob.arm.setPower(-0.9);
+            }
+            else {
+
+                rob.arm.setPower(0);
+            }
+
+
 
 
 

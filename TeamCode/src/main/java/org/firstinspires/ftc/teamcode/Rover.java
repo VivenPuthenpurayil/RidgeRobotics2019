@@ -47,6 +47,7 @@ public class Rover extends LinearOpMode{
     DcMotor motorRight;
     DcMotor motorLeft;
     DcMotor rack;
+    DcMotor arm;
 
     public Rover(HardwareMap hardwareMap, setupType... setup) throws InterruptedException {
         this.hardwareMap = hardwareMap;
@@ -58,6 +59,13 @@ public class Rover extends LinearOpMode{
 
                 case latching:
                     setupLatching();
+                    break;
+
+                case mineralControl:
+                    setupMineralControl();
+                    break;
+
+
 
             }
         }
@@ -80,7 +88,13 @@ public class Rover extends LinearOpMode{
     public void setupLatching() throws InterruptedException {
         rack = motor(rackS, DcMotorSimple.Direction.FORWARD);
 
-        encoder(EncoderMode.ON, rack);
+        encoder(EncoderMode.OFF, rack);
+    }
+
+    public void setupMineralControl() throws InterruptedException{
+        arm = motor(armS, DcMotorSimple.Direction.FORWARD);
+
+        encoder(EncoderMode.OFF, arm);
     }
 
     //-----------------------HARDWARE SETUP FUNCTIONS---------------------------------------

@@ -25,8 +25,9 @@ public class Constants {
     //--------------------------------CONFIGURATION VALUES--------------------
 
     public static final String motorRightS = "motorRight";
-    public static final String motorLeftS = "motorRight";
-    public static final String rackS = "motorRight";
+    public static final String motorLeftS = "motorLeft";
+    public static final String rackS = "rack";
+    public static final String armS = "arm";
 
 
 

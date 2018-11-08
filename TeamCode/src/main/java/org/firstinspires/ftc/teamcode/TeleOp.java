@@ -21,6 +21,10 @@ public abstract class TeleOp extends Central{
     public static float fb;
     public static float rl;
 
+    public static float fb2;
+    public static float rl2;
+
+
     public static double diagonalSpeed;
 
     public static boolean rightStickButtonPressed;
@@ -41,6 +45,9 @@ public abstract class TeleOp extends Central{
 
         fb = Math.abs(yAxis1);
         rl = Math.abs(xAxis1);
+
+        fb2 = Math.abs(yAxis2);
+        rl2 = Math.abs(xAxis2);
     }
 
 
