@@ -29,14 +29,10 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
@@ -96,12 +92,8 @@ import static org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocaliz
  * is explained below.
  */
 
-@TeleOp(name="VuforiaRoverRuckus", group ="Concept")
-@Disabled
-public class VuforiaRoverRuckus extends LinearOpMode{
-
-    private ElapsedTime period  = new ElapsedTime();
-
+@Autonomous(name="Concept: Vuforia Rover Nav", group ="Smart")
+public class ConceptVuforiaNavRoverRuckus extends LinearOpMode {
 
     /*
      * IMPORTANT: You need to obtain your own license key to use Vuforia. The string below with which
@@ -164,7 +156,6 @@ public class VuforiaRoverRuckus extends LinearOpMode{
         frontCraters.setName("Front-Craters");
         VuforiaTrackable backSpace = targetsRoverRuckus.get(3);
         backSpace.setName("Back-Space");
-
 
         // For convenience, gather together all the trackable objects in one easily-iterable collection */
         List<VuforiaTrackable> allTrackables = new ArrayList<VuforiaTrackable>();
@@ -244,7 +235,7 @@ public class VuforiaRoverRuckus extends LinearOpMode{
          * Z is UP on the robot.  This equates to a bearing angle of Zero degrees.
          *
          * The phone starts out lying flat, with the screen facing Up and with the physical top of the phone
-         * pointing to the LEFT side of the Rover.  It's very important when you test this code that the top of the
+         * pointing to the LEFT side of the Robot.  It's very important when you test this code that the top of the
          * camera is pointing to the left side of the  robot.  The rotation angles don't work if you flip the phone.
          *
          * If using the rear (High Res) camera:
@@ -256,7 +247,7 @@ public class VuforiaRoverRuckus extends LinearOpMode{
          * This requires a Positive 90 degree rotation on the Y axis
          *
          * Next, translate the camera lens to where it is on the robot.
-         * In this example, it is centered (left to right), but 110 mm forwarjd of the middle of the robot, and 200 mm above ground level.
+         * In this example, it is centered (left to right), but 110 mm forward of the middle of the robot, and 200 mm above ground level.
          */
 
         final int CAMERA_FORWARD_DISPLACEMENT  = 110;   // eg: Camera is 110 mm in front of robot center
@@ -282,6 +273,7 @@ public class VuforiaRoverRuckus extends LinearOpMode{
         /** Start tracking the data sets we care about. */
         targetsRoverRuckus.activate();
         while (opModeIsActive()) {
+
             // check all the trackable target to see which one (if any) is visible.
             targetVisible = false;
             for (VuforiaTrackable trackable : allTrackables) {
@@ -296,11 +288,9 @@ public class VuforiaRoverRuckus extends LinearOpMode{
                         lastLocation = robotLocationTransform;
                     }
                     break;
-                }else{
-                    idle();
                 }
             }
-            }
+
             // Provide feedback as to where the robot is located (if we know).
             if (targetVisible) {
                 // express position (translation) of robot in inches.
@@ -311,26 +301,11 @@ public class VuforiaRoverRuckus extends LinearOpMode{
                 // express the rotation of the robot in degrees.
                 Orientation rotation = Orientation.getOrientation(lastLocation, EXTRINSIC, XYZ, DEGREES);
                 telemetry.addData("Rot (deg)", "{Roll, Pitch, Heading} = %.0f, %.0f, %.0f", rotation.firstAngle, rotation.secondAngle, rotation.thirdAngle);
-
-
             }
             else {
                 telemetry.addData("Visible Target", "none");
             }
             telemetry.update();
         }
-
-    public VectorF navOffWall(VectorF trans, double robotAngle, VectorF offWall){
-        return new VectorF((float) (trans.get(0) - offWall.get(0) * Math.sin(Math.toRadians(robotAngle)) - offWall.get(2) * Math.cos(Math.toRadians(robotAngle))), trans.get(1), (float) (trans.get(2) + offWall.get(0) * Math.cos(Math.toRadians(robotAngle)) - offWall.get(2) * Math.sin(Math.toRadians(robotAngle))));
-    }
-
-    public VectorF anglesFromTarget(VuforiaTrackableDefaultListener image){
-        float [] data = image.getRawPose().getData();
-        float [] [] rotation = {{data[0], data[1]}, {data[4], data[5], data[6]}, {data[8], data[9], data[10]}};
-
-        double thetaX = Math.atan2(rotation[2][1], rotation[2][2]);
-        double thetaY = Math.atan2(-rotation[2][0], Math.sqrt(rotation[2][1] * rotation[2][1] + rotation[2][2] * rotation[2][2]));
-        double thetaZ = Math.atan2(rotation[1][0], rotation[0][0]);
-        return new VectorF((float)thetaX, (float)thetaY, (float)thetaZ);
     }
 }
