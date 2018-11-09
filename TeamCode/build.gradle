@@ -15,6 +15,6 @@ android {
 }
 dependencies {
     implementation project(':openCVLibrary343')
-    implementation project(':DogeCV')
     implementation project(':openCVLibrary3')
+    implementation project(':DogeCV')
 }
