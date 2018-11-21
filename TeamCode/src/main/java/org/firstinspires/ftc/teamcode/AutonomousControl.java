@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Auton;
+package org.firstinspires.ftc.teamcode;
 
 import com.disnodeteam.dogecv.CameraViewDisplay;
 import com.disnodeteam.dogecv.DogeCV;
@@ -10,6 +10,9 @@ import com.qualcomm.robotcore.hardware.DigitalChannel;
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
 import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
@@ -53,21 +56,9 @@ public abstract class AutonomousControl extends Central {
     //lol
 
 
-    DcMotor rack,left,right;
     int[] RobotPos = new int[2];
 
-    public DcMotor motor(String name, DcMotor.Direction direction) throws InterruptedException {
-        DcMotor motor = hardwareMap.dcMotor.get(name);
-        motor.setDirection(DcMotor.Direction.FORWARD);
-        motor.setPower(0);
-
-        return motor;
-    }
-    public void motorSetup() throws InterruptedException {
-        rack = motor("rack", DcMotorSimple.Direction.FORWARD);
-        left = motor("left", DcMotorSimple.Direction.FORWARD);
-        right = motor("right", DcMotorSimple.Direction.REVERSE);
-    }
+    
 
     public void VuforiaSetup()//copied letter for letter from ConceptVuforiaNav...
     {
@@ -107,7 +98,7 @@ public abstract class AutonomousControl extends Central {
          * of the {@link OpenGLMatrix} class.
          *
          * If you are standing in the Red Alliance Station looking towards the center of the field,
-         *     - The X axis runs from your left to the right. (positive from the center to the right)
+         *     - The X axis runs from your left to the rob.motorRight. (positive from the center to the right)
          *     - The Y axis runs from the Red Alliance Station towards the other side of the field
          *       where the Blue Alliance Station is. (Positive is from the center, towards the BlueAlliance station)
          *     - The Z axis runs from the floor, upwards towards the ceiling.  (Positive is above the floor)
@@ -120,7 +111,7 @@ public abstract class AutonomousControl extends Central {
 
         /**
          * To place the BlueRover target in the middle of the blue perimeter wall:
-         * - First we rotate it 90 around the field's X axis to flip it upright.
+         * - First we rotate it 90 around the field's X axis to flip it uprob.motorRight.
          * - Then, we translate it along the Y axis to the blue perimeter wall.
          */
         OpenGLMatrix blueRoverLocationOnField = OpenGLMatrix
@@ -130,7 +121,7 @@ public abstract class AutonomousControl extends Central {
 
         /**
          * To place the RedFootprint target in the middle of the red perimeter wall:
-         * - First we rotate it 90 around the field's X axis to flip it upright.
+         * - First we rotate it 90 around the field's X axis to flip it uprob.motorRight.
          * - Second, we rotate it 180 around the field's Z axis so the image is flat against the red perimeter wall
          *   and facing inwards to the center of the field.
          * - Then, we translate it along the negative Y axis to the red perimeter wall.
@@ -142,7 +133,7 @@ public abstract class AutonomousControl extends Central {
 
         /**
          * To place the FrontCraters target in the middle of the front perimeter wall:
-         * - First we rotate it 90 around the field's X axis to flip it upright.
+         * - First we rotate it 90 around the field's X axis to flip it uprob.motorRight.
          * - Second, we rotate it 90 around the field's Z axis so the image is flat against the front wall
          *   and facing inwards to the center of the field.
          * - Then, we translate it along the negative X axis to the front perimeter wall.
@@ -154,7 +145,7 @@ public abstract class AutonomousControl extends Central {
 
         /**
          * To place the BackSpace target in the middle of the back perimeter wall:
-         * - First we rotate it 90 around the field's X axis to flip it upright.
+         * - First we rotate it 90 around the field's X axis to flip it uprob.motorRight.
          * - Second, we rotate it -90 around the field's Z axis so the image is flat against the back wall
          *   and facing inwards to the center of the field.
          * - Then, we translate it along the X axis to the back perimeter wall.
@@ -240,20 +231,83 @@ public abstract class AutonomousControl extends Central {
     }
 
     public void oneSmallStep() throws InterruptedException{
-        DigitalChannel limitSwitch = hardwareMap.digitalChannel.get("limit");//name it limit in config pls <3
-        while(!limitSwitch.getState())
+        telemetry.addData("Deploying Limit: ", rob.deployingLimit.getState());
+        telemetry.update();
+        SamplingOrderDetector Viven;
+        Viven = new SamplingOrderDetector();
+        Viven.init(hardwareMap.appContext, CameraViewDisplay.getInstance());
+        Viven.useDefaults();
+
+        Viven.downscale = 0.4;
+
+        Viven.areaScoringMethod = DogeCV.AreaScoringMethod.MAX_AREA;
+
+        Viven.maxAreaScorer.weight = 0.005;
+
+        Viven.ratioScorer.weight = 5;
+        Viven.ratioScorer.perfectRatio = 1.0;
+
+        Viven.enable();
+        SamplingOrderDetector.GoldLocation yeet = Viven.getCurrentOrder();
+
+        while(!rob.deployingLimit.getState() && opModeIsActive())
         {
-            rack.setPower(1);
+            rob.anyMovement(0.8, Rover.movements.rackDown, rob.rack);
         }
-        rack.setPower(0);
-        left.setPower(-0.3);
-        right.setPower(0.3);
-        wait(500);
-        rack.setPower(-1);
-        wait(2000);
-        left.setPower(0.3);
-        right.setPower(-0.3);
-        wait(500);
+        rob.rack.setPower(0);
+
+        sleep(1000);
+
+        rob.encoderMovement(0.4, 1, 3, 20, Rover.movements.cw2, rob.motorLeft, rob.motorRight);
+        rob.encoderMovement(0.8, 1, 3, 20, Rover.movements.forward2, rob.motorLeft, rob.motorRight);
+        rob.encoderMovement(0.4, 1, 3, 20, Rover.movements.ccw2, rob.motorLeft, rob.motorRight);
+        sleep(500);
+
+
+        switch(yeet){
+            case LEFT:
+                rob.encoderMovement(0.4, 1.5, 4, 20, Rover.movements.ccw2, rob.motorLeft, rob.motorRight);
+                rob.encoderMovement(0.8, 8, 8, 20, Rover.movements.forward2, rob.motorLeft, rob.motorRight);
+                break;
+            case CENTER:
+            case UNKNOWN:
+
+                rob.encoderMovement(0.8, 8, 8, 20, Rover.movements.forward2, rob.motorLeft, rob.motorRight);
+                break;
+            case RIGHT:
+                rob.encoderMovement(0.4, 1.5, 4, 20, Rover.movements.cw2, rob.motorLeft, rob.motorRight);
+                rob.encoderMovement(0.8, 8, 8, 20, Rover.movements.forward2, rob.motorLeft, rob.motorRight);
+                break;
+        }
+       // rob.encoderMovement(0.7, 8, 8, 300, Rover.movements.forward2, rob.motorLeft, rob.motorRight);
+        rob.marker.setPosition(0);
+
+    }
+
+    public void movetoLoc(VectorF loc, Orientation orient){
+
+    }
+
+    public void oneSmallStep2() throws InterruptedException{
+        telemetry.addData("Deploying Limit: ", rob.deployingLimit.getState());
+        telemetry.update();
+        while(!rob.deployingLimit.getState() && opModeIsActive())
+        {
+            rob.anyMovement(0.8, Rover.movements.rackDown, rob.rack);
+        }
+        rob.rack.setPower(0);
+
+        sleep(1000);
+
+        rob.turn(45, Rover.turnside.cw, 0.3, Rover.axis.back);
+        rob.encoderMovement(0.8, 1, 3, 20, Rover.movements.forward2, rob.motorLeft, rob.motorRight);
+        rob.turn(45, Rover.turnside.ccw, 0.3, Rover.axis.back);
+
+        sleep(500);
+        rob.encoderMovement(0.7, 5, 5, 300, Rover.movements.forward2, rob.motorLeft, rob.motorRight);
+
+        rob.marker.setPosition(1);
+
     }
 
     public void sample() throws InterruptedException{
@@ -270,52 +324,56 @@ public abstract class AutonomousControl extends Central {
         VivenIsDumb.enable();
 
         // get the angle so you can compare
-        float startAngle=GetVufPos()[1][2];
+        float startAngle= rob.imu.getAngularOrientation(AxesReference.INTRINSIC,AxesOrder.ZXY,AngleUnit.DEGREES).firstAngle;
 
 
         switch(VivenIsDumb.getCurrentOrder())
         {
             case LEFT:
-                while(GetVufPos()[1][2]-startAngle<30)// prob a good enough angle
+                while(rob.imu.getAngularOrientation(AxesReference.INTRINSIC,AxesOrder.ZXY,AngleUnit.DEGREES).firstAngle-startAngle<50)// prob a good enough angle
                 {
-                    left.setPower(-0.3);
-                    right.setPower(0.3);
+                    rob.motorLeft.setPower(-0.3);
+                    rob.motorRight.setPower(0.3);
                 }
-                left.setPower(0.3);
+                rob.motorLeft.setPower(0.3);
                 wait(3000);//idk how long this should act be
-                left.setPower(-0.3);
-                right.setPower(-0.3);
+                /*
+                rob.motorLeft.setPower(-0.3);
+                rob.motorRight.setPower(-0.3);
                 wait(3000);
                 while(GetVufPos()[1][2]-startAngle<0)// turn back
                 {
-                    left.setPower(-0.3);
-                    right.setPower(0.3);
+                    rob.motorLeft.setPower(-0.3);
+                    rob.motorRight.setPower(0.3);
                 }
+                */
                 break;
             case RIGHT:
-                while(GetVufPos()[1][2]-startAngle>-30)// prob a good enough angle
+                while(rob.imu.getAngularOrientation(AxesReference.INTRINSIC,AxesOrder.ZXY,AngleUnit.DEGREES).firstAngle-startAngle>-30)// prob a good enough angle
                 {
-                    left.setPower(0.3);
-                    right.setPower(-0.3);
+                    rob.motorLeft.setPower(0.3);
+                    rob.motorRight.setPower(-0.3);
                 }
-                right.setPower(0.3);
+                rob.motorRight.setPower(0.3);
                 wait(3000);//idk how long this should act be
-                left.setPower(-0.3);
-                right.setPower(-0.3);
+                /*
+                rob.motorLeft.setPower(-0.3);
+                rob.motorRight.setPower(-0.3);
                 wait(3000);
                 while(GetVufPos()[1][2]-startAngle<0)// prob a good enough angle
                 {
-                    left.setPower(-0.3);
-                    right.setPower(0.3);
-                }
+                    rob.motorLeft.setPower(-0.3);
+                    rob.motorRight.setPower(0.3);
+                }*/
                 break;
             case CENTER:
-                left.setPower(0.3);
-                right.setPower(0.3);
+                rob.motorLeft.setPower(0.3);
+                rob.motorRight.setPower(0.3);
                 wait(2000);
-                left.setPower(-0.3);
-                right.setPower(-0.3);
+                /*rob.motorLeft.setPower(-0.3);
+                rob.motorRight.setPower(-0.3);
                 wait(2000);
+                */
                 break;
         }
     }

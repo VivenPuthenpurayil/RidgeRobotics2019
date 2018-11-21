@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.bosch.BNO055IMUImpl;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -7,9 +8,16 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
 import java.util.Arrays;
 
@@ -17,6 +25,10 @@ import static org.firstinspires.ftc.teamcode.Constants.*;
 
 public class Rover extends LinearOpMode{
     ElapsedTime runtime;
+    Central central;
+    public float initorient;
+    public CRServo strafer;
+
     public void setRuntime(ElapsedTime runtime) {
         this.runtime = runtime;
     }
@@ -29,7 +41,14 @@ public class Rover extends LinearOpMode{
         cwback(-1,-1,0,0),
         ccwback(1,1,0,0),
         cwfront(0,0,-1,-1),
-        ccwfront(0,0,1,1);
+        ccwfront(0,0,1,1),
+        rackDown(-1),
+        rackUp(1),
+        forward2(1, -1),
+        back2(-1, 1),
+        cw2(1,1),
+        ccw2(-1, -1);
+
 
         private final double[] directions;
 
@@ -37,20 +56,60 @@ public class Rover extends LinearOpMode{
             this.directions = signs;
         }
 
-        private double[] getDirections(){
+        public double[] getDirections(){
             return directions;
         }
     }
-    
+    public enum turnside {
+        ccw, cw
+    }
+
+    public enum axis {
+        front, center, back
+    }
     public HardwareMap hardwareMap;
+
+    public void setMotorRight(DcMotor motorRight) {
+        this.motorRight = motorRight;
+    }
+
+    public void setMotorLeft(DcMotor motorLeft) {
+        this.motorLeft = motorLeft;
+    }
+
+    public void setRack(DcMotor rack) {
+        this.rack = rack;
+    }
+
+    public void setArm(DcMotor arm) {
+        this.arm = arm;
+    }
 
     DcMotor motorRight;
     DcMotor motorLeft;
     DcMotor rack;
     DcMotor arm;
 
-    public Rover(HardwareMap hardwareMap, setupType... setup) throws InterruptedException {
+    Servo marker;
+    Servo elbow;
+    Servo wrist;
+
+    DigitalChannel latchingLimit;
+    DigitalChannel deployingLimit;
+
+
+
+
+    public BNO055IMUImpl imu;
+    public BNO055IMUImpl.Parameters parameters = new BNO055IMUImpl.Parameters();
+    public Orientation current;
+
+    public static boolean isnotstopped;
+
+    public Rover(HardwareMap hardwareMap, ElapsedTime runtime, Central central, setupType... setup) throws InterruptedException {
         this.hardwareMap = hardwareMap;
+        this.runtime = runtime;
+        this.central = central;
         for (setupType type : setup) {
             switch (type){
                 case drive:
@@ -64,6 +123,15 @@ public class Rover extends LinearOpMode{
                 case mineralControl:
                     setupMineralControl();
                     break;
+
+
+                case marker:
+                    setupMarker();
+                    break;
+                case imu:
+                    setupIMU();
+                    break;
+
 
 
 
@@ -88,13 +156,38 @@ public class Rover extends LinearOpMode{
     public void setupLatching() throws InterruptedException {
         rack = motor(rackS, DcMotorSimple.Direction.FORWARD);
 
-        encoder(EncoderMode.OFF, rack);
+        deployingLimit = hardwareMap.digitalChannel.get(deployingLimitS);//name it limit in config pls <3
+
+        latchingLimit = hardwareMap.digitalChannel.get(latchingLimitS);
+
+        strafer = servo(straferS, DcMotorSimple.Direction.FORWARD, 0);
+
+        encoder(EncoderMode.ON, rack);
     }
 
     public void setupMineralControl() throws InterruptedException{
         arm = motor(armS, DcMotorSimple.Direction.FORWARD);
 
-        encoder(EncoderMode.OFF, arm);
+        elbow = servo(elbowS, Servo.Direction.FORWARD, 0, 1, 0.8);
+        wrist = servo(wristS, Servo.Direction.FORWARD, 0, 1, 0.8);
+
+        encoder(EncoderMode.ON, arm);
+    }
+
+    public void setupMarker() throws InterruptedException{
+        marker = servo(markerS, Servo.Direction.FORWARD, 0, 1, 0.6);
+    }
+
+    public void setupIMU() throws InterruptedException{
+        parameters.angleUnit = BNO055IMUImpl.AngleUnit.DEGREES;
+        parameters.accelUnit = BNO055IMUImpl.AccelUnit.METERS_PERSEC_PERSEC;
+        parameters.calibrationDataFile = "AdafruitIMUCalibration.json"; // see the calibration sample opmode
+        parameters.loggingEnabled = true; //copypasted from BNO055IMU sample code, no clue what this does
+        parameters.loggingTag = "IMU"; //copypasted from BNO055IMU sample code, no clue what this does
+        imu = hardwareMap.get(BNO055IMUImpl.class, imuS);
+        imu.initialize(parameters);
+        initorient = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle;
+
     }
 
     //-----------------------HARDWARE SETUP FUNCTIONS---------------------------------------
@@ -227,15 +320,14 @@ public class Rover extends LinearOpMode{
 
         }
     }
-    protected void encoderMovement(double speed, double distance, double timeoutS, long waitAfter, movements movement, DcMotor... motors) throws  InterruptedException{
+    public void encoderMovement(double speed, double distance, double timeoutS, long waitAfter, movements movement, DcMotor... motors) throws  InterruptedException{
 
         int[] targets = new int[motors.length];
         double[] signs = movement.getDirections();
 
         // Ensure that the opmode is still active
-        if (opModeIsActive()) {
+        if (central.opModeIsActive()) {
             // Determine new target position, and pass to motor controller
-
 
             for (DcMotor motor : motors){
                 int x = Arrays.asList(motors).indexOf(motor);
@@ -256,13 +348,13 @@ public class Rover extends LinearOpMode{
 
             // keep looping while we are still active, and there is time left, and both motors are running.
             boolean x = true;
-            while (opModeIsActive() &&
+            while (central.opModeIsActive() &&
                     (runtime.seconds() < timeoutS) &&
                     (x)) {
 
                 // Display it for the driver.
                 // Allow time for other processes to run.
-                idle();
+                central.idle();
                 for (DcMotor motor: motors){
                     if (!motor.isBusy()){
                         x =false;
@@ -279,11 +371,49 @@ public class Rover extends LinearOpMode{
             for (DcMotor motor: motors){
                 motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             }
-            sleep(waitAfter);
+            central.sleep(waitAfter);
 
 
         }
     }
+
+    public void turn(float target, turnside direction, double speed, axis rotation_Axis) throws InterruptedException{
+
+        telemetry.addData("IMU State: ", imu.getSystemStatus());
+        telemetry.update();
+
+        float start = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle;
+        float end = start + ((direction == turnside.cw) ? target : -target);
+        isnotstopped = true;
+        try {
+            switch (rotation_Axis) {
+                case center:
+                    driveTrainMovement(speed, (direction == turnside.cw) ? movements.cw : movements.ccw);
+                    break;
+                case back:
+                    driveTrainMovement(speed, (direction == turnside.cw) ? movements.cwback : movements.ccwback);
+                    break;
+                case front:
+                    driveTrainMovement(speed, (direction == turnside.cw) ? movements.cwfront : movements.ccwfront);
+                    break;
+            }
+        } catch (java.lang.InterruptedException e) {
+            isnotstopped = false;
+        }
+        while (!((end <= current.firstAngle + 1) && end > current.firstAngle - 1) && opModeIsActive() && isnotstopped) {
+            current = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        }
+        try {
+            stopDrivetrain();
+        } catch (java.lang.InterruptedException e) {
+        }
+
+    }
+
+    public void turn2Wheel(float target, turnside direction, double speed) throws InterruptedException {
+        turn(target, direction, speed, axis.back);
+    }
+
 
     //------------------DRIVETRAIN TELEOP FUNCTIONS------------------------------------------------------------------------
     public void driveTrainMovement(double speed, movements movement) throws InterruptedException{
@@ -294,6 +424,21 @@ public class Rover extends LinearOpMode{
 
         }
     }
+
+    public void anyMovement(double speed, movements movement, DcMotor... motors) throws InterruptedException{
+        double[] signs = movement.getDirections();
+        for (DcMotor motor: motors){
+            int x = Arrays.asList(motors).indexOf(motor);
+            motor.setPower(signs[x]* speed);
+
+        }
+    }
+    public void stopDrivetrain() throws InterruptedException{
+        for (DcMotor motor: drivetrain){
+            motor.setPower(0);
+        }
+    }
+
     public void powerMotors(double speed, long time, DcMotor... motors) {
         for (DcMotor motor : motors) {
             motor.setPower(speed);
@@ -311,8 +456,9 @@ public class Rover extends LinearOpMode{
         ON, OFF
     }
     public enum setupType{
-        autonomous, drive, latching, marker, phoneswivel, sensors, mineralControl, teleop;
+        autonomous, drive, latching, imu, marker, phoneswivel, sensors, mineralControl, teleop, none;
     }
+
 
 
 }
