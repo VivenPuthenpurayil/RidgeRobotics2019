@@ -23,11 +23,20 @@ import java.util.Arrays;
 
 import static org.firstinspires.ftc.teamcode.Constants.*;
 
-public class Rover extends LinearOpMode{
+public class Rover {
     ElapsedTime runtime;
     Central central;
     public float initorient;
     public CRServo strafer;
+
+
+    public void setCentral(Central central) {
+        this.central = central;
+    }
+
+    public void setHardwareMap(HardwareMap hardwareMap) {
+        this.hardwareMap = hardwareMap;
+    }
 
     public void setRuntime(ElapsedTime runtime) {
         this.runtime = runtime;
@@ -36,6 +45,12 @@ public class Rover extends LinearOpMode{
     public enum movements{
         backward(-1, 1, -1, 1),
         forward(1, -1, 1, -1),
+        left(1, 1, -1, -1),
+        right(-1, -1, 1, 1),
+        tr(0, -1, 1, 0),
+        tl(1, 0, 0, -1),
+        br(-1, 0, 0, 1),
+        bl(0, 1, -1, 0),
         ccw(-1, -1, -1, -1),
         cw(1, 1, 1, 1),
         cwback(-1,-1,0,0),
@@ -69,14 +84,6 @@ public class Rover extends LinearOpMode{
     }
     public HardwareMap hardwareMap;
 
-    public void setMotorRight(DcMotor motorRight) {
-        this.motorRight = motorRight;
-    }
-
-    public void setMotorLeft(DcMotor motorLeft) {
-        this.motorLeft = motorLeft;
-    }
-
     public void setRack(DcMotor rack) {
         this.rack = rack;
     }
@@ -85,8 +92,13 @@ public class Rover extends LinearOpMode{
         this.arm = arm;
     }
 
-    DcMotor motorRight;
-    DcMotor motorLeft;
+    DcMotor motorFR;
+    DcMotor motorFL;
+    DcMotor motorBR;
+    DcMotor motorBL;
+
+
+
     DcMotor rack;
     DcMotor arm;
 
@@ -106,10 +118,7 @@ public class Rover extends LinearOpMode{
 
     public static boolean isnotstopped;
 
-    public Rover(HardwareMap hardwareMap, ElapsedTime runtime, Central central, setupType... setup) throws InterruptedException {
-        this.hardwareMap = hardwareMap;
-        this.runtime = runtime;
-        this.central = central;
+    public Rover(setupType... setup) throws InterruptedException {
         for (setupType type : setup) {
             switch (type){
                 case drive:
@@ -132,6 +141,10 @@ public class Rover extends LinearOpMode{
                     setupIMU();
                     break;
 
+                case vuforia:
+                    setupVuforia();
+                    break;
+
 
 
 
@@ -139,18 +152,29 @@ public class Rover extends LinearOpMode{
         }
     }
 
-    @Override
-    public void runOpMode() throws InterruptedException {}
+    public void initializeLatching() throws InterruptedException{
+        while(!latchingLimit.getState())
+        {
+            anyMovement(0.8, Rover.movements.rackUp, rack);
+        }
+        rack.setPower(0);
+    }
+
+    public void setupVuforia() {
+
+    }
 
 
     public  DcMotor[] drivetrain;
 
 
     public void setupDrivetrain() throws InterruptedException {
-        motorRight = motor(motorRightS, DcMotorSimple.Direction.FORWARD);
-        motorLeft = motor(motorLeftS, DcMotorSimple.Direction.FORWARD);
+        motorFR = motor(motorFRS, DcMotorSimple.Direction.FORWARD);
+        motorFL = motor(motorFLS, DcMotorSimple.Direction.FORWARD);
+        motorBR = motor(motorBRS, DcMotorSimple.Direction.FORWARD);
+        motorBL = motor(motorBLS, DcMotorSimple.Direction.FORWARD);
 
-        motorDriveMode(EncoderMode.ON, motorRight, motorLeft);
+        motorDriveMode(EncoderMode.ON, motorFR, motorFL, motorBR, motorBL);
     }
 
     public void setupLatching() throws InterruptedException {
@@ -163,6 +187,8 @@ public class Rover extends LinearOpMode{
         strafer = servo(straferS, DcMotorSimple.Direction.FORWARD, 0);
 
         encoder(EncoderMode.ON, rack);
+
+        initializeLatching();
     }
 
     public void setupMineralControl() throws InterruptedException{
@@ -215,8 +241,8 @@ public class Rover extends LinearOpMode{
         ColorSensor sensor = hardwareMap.colorSensor.get(name);
         sensor.enableLed(ledOn);
 
-        telemetry.addData("Beacon Red Value: ", sensor.red());
-        telemetry.update();
+        central.telemetry.addData("Beacon Red Value: ", sensor.red());
+        central.telemetry.update();
 
         return sensor;
     }
@@ -231,7 +257,7 @@ public class Rover extends LinearOpMode{
                 for (DcMotor i : motor) {
                     i.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                 }
-                idle();
+                central.idle();
                 for (DcMotor i : motor) {
                     i.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                 }
@@ -248,7 +274,7 @@ public class Rover extends LinearOpMode{
                 for (DcMotor i : motor) {
                     i.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                 }
-                idle();
+                central.idle();
                 for (DcMotor i : motor) {
                     i.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                 }
@@ -269,7 +295,7 @@ public class Rover extends LinearOpMode{
         double[] signs = movement.getDirections();
 
         // Ensure that the opmode is still active
-        if (opModeIsActive()) {
+        if (central.opModeIsActive()) {
             // Determine new target position, and pass to motor controller
 
 
@@ -292,13 +318,13 @@ public class Rover extends LinearOpMode{
 
             // keep looping while we are still active, and there is time left, and both motors are running.
             boolean x = true;
-            while (opModeIsActive() &&
+            while (central.opModeIsActive() &&
                     (runtime.seconds() < timeoutS) &&
                     (x)) {
 
                 // Display it for the driver.
                 // Allow time for other processes to run.
-                idle();
+                central.idle();
                 for (DcMotor motor: drivetrain){
                     if (!motor.isBusy()){
                         x =false;
@@ -315,7 +341,7 @@ public class Rover extends LinearOpMode{
             for (DcMotor motor: drivetrain){
                 motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             }
-            sleep(waitAfter);
+            central.sleep(waitAfter);
 
 
         }
@@ -379,8 +405,8 @@ public class Rover extends LinearOpMode{
 
     public void turn(float target, turnside direction, double speed, axis rotation_Axis) throws InterruptedException{
 
-        telemetry.addData("IMU State: ", imu.getSystemStatus());
-        telemetry.update();
+        central.telemetry.addData("IMU State: ", imu.getSystemStatus());
+        central.telemetry.update();
 
         float start = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle;
         float end = start + ((direction == turnside.cw) ? target : -target);
@@ -400,7 +426,7 @@ public class Rover extends LinearOpMode{
         } catch (java.lang.InterruptedException e) {
             isnotstopped = false;
         }
-        while (!((end <= current.firstAngle + 1) && end > current.firstAngle - 1) && opModeIsActive() && isnotstopped) {
+        while (!((end <= current.firstAngle + 1) && end > current.firstAngle - 1) && central.opModeIsActive() && isnotstopped) {
             current = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
         }
         try {
@@ -443,7 +469,7 @@ public class Rover extends LinearOpMode{
         for (DcMotor motor : motors) {
             motor.setPower(speed);
         }
-        sleep(time);
+        central.sleep(time);
         for (DcMotor motor : motors) {
             motor.setPower(0);
         }
@@ -456,7 +482,7 @@ public class Rover extends LinearOpMode{
         ON, OFF
     }
     public enum setupType{
-        autonomous, drive, latching, imu, marker, phoneswivel, sensors, mineralControl, teleop, none;
+        autonomous, drive, latching, imu, marker, phoneswivel, sensors, mineralControl, teleop, none, vuforia;
     }
 
 

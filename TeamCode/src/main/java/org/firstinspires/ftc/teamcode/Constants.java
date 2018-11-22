@@ -28,8 +28,10 @@ public class Constants {
 
     //--------------------------------CONFIGURATION VALUES--------------------
 
-    public static final String motorRightS = "motorRight";
-    public static final String motorLeftS = "motorLeft";
+    public static final String motorFRS = "motorFR";
+    public static final String motorFLS = "motorFLS";
+    public static final String motorBRS = "motorBR";
+    public static final String motorBLS = "motorBLS";
     public static final String rackS = "rack";
     public static final String armS = "arm";
 

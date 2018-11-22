@@ -31,7 +31,7 @@ public class RedDepot extends AutonomousControl{
 
         while (opModeIsActive()){
 
-            oneSmallStep();
+            oneSmallSte p();
             //sample();
             /*encoderMovement(0.4, 5, 10, 500, ccw2, rob.motorLeft, rob.motorRight);
             encoderMovement(0.4, 20, 10, 500, forward2, rob.motorLeft, rob.motorRight);
