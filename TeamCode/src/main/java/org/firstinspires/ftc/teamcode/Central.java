@@ -34,10 +34,8 @@ public abstract class Central extends LinearOpMode {
         this.rob = rob;
     }
 
-    public void setup(ElapsedTime rtime, Rover.setupType... setupTypes) throws InterruptedException {
-        setRob(new Rover(setupTypes));
-        rob.setCentral(this);
-        rob.setHardwareMap(hardwareMap);
+    public void setup(ElapsedTime rtime, Rover.setupType... setup) throws InterruptedException {
+        setRob(new Rover(hardwareMap, runtime, this, setup));
         setRuntime(rtime);
     }
 

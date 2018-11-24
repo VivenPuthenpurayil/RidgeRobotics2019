@@ -30,8 +30,8 @@ public class RedDepotIMU extends AutonomousControl{
 
         while (opModeIsActive()){
 
-            oneSmallStep2();
-            sample();
+            //oneSmallStep2();
+            //sample();
             /*encoderMovement(0.4, 5, 10, 500, ccw2, rob.motorLeft, rob.motorRight);
             encoderMovement(0.4, 20, 10, 500, forward2, rob.motorLeft, rob.motorRight);
             encoderMovement(0.4, 10, 10, 500, cw2, rob.motorLeft, rob.motorRight);

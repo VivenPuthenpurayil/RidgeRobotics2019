@@ -21,32 +21,6 @@ public class Test_TwoMotor extends TeleOp {
         while (opModeIsActive()) {
 
             standardGamepadData();
-            if (validStick(xAxis1, yAxis1)) { //MAIN DIRECTIONS
-
-                if (yAxis1 >= Math.abs(xAxis1)) {
-                    rob.motorLeft.setPower(fb);
-                    setMotorPower(fb);
-
-                } else if (yAxis1 <= -Math.abs(xAxis1)) {
-                    rob.motorLeft.setPower(-fb);
-
-                }
-            }else{
-                rob.motorLeft.setPower(0);
-            }
-
-            if (validStick(xAxis2, yAxis2)) { //MAIN DIRECTIONS
-
-                if (yAxis2 >= Math.abs(xAxis2)) {
-                    rob.motorRight.setPower(fb2);
-
-                } else if (yAxis2 <= -Math.abs(xAxis2)) {
-                    rob.motorRight.setPower(-fb2);
-
-                }
-            }else{
-                rob.motorRight.setPower(0);
-            }
 
         }
     }

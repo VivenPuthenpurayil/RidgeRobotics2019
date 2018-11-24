@@ -29,23 +29,17 @@ public class Constants {
     //--------------------------------CONFIGURATION VALUES--------------------
 
     public static final String motorFRS = "motorFR";
-    public static final String motorFLS = "motorFLS";
+    public static final String motorFLS = "motorFL";
     public static final String motorBRS = "motorBR";
-    public static final String motorBLS = "motorBLS";
+    public static final String motorBLS = "motorBL";
+
     public static final String rackS = "rack";
     public static final String armS = "arm";
 
     public static final String deployingLimitS = "depLimit";
     public static final String latchingLimitS = "latLimit";
 
-
-    public static final String markerS = "marker";
-    public static final String elbowS = "elbow";
-    public static final String wristS = "wrist";
-
     public static final String imuS = "imu";
-
-    public static final String straferS = "strafer";
 
 
 

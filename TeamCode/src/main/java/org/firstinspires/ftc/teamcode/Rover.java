@@ -27,7 +27,7 @@ public class Rover {
     ElapsedTime runtime;
     Central central;
     public float initorient;
-    public CRServo strafer;
+
 
 
     public void setCentral(Central central) {
@@ -84,6 +84,7 @@ public class Rover {
     }
     public HardwareMap hardwareMap;
 
+
     public void setRack(DcMotor rack) {
         this.rack = rack;
     }
@@ -92,25 +93,16 @@ public class Rover {
         this.arm = arm;
     }
 
-    DcMotor motorFR;
-    DcMotor motorFL;
-    DcMotor motorBR;
-    DcMotor motorBL;
-
-
+    public DcMotor motorFR;
+    public DcMotor motorFL;
+    public DcMotor motorBR;
+    public DcMotor motorBL;
 
     DcMotor rack;
     DcMotor arm;
 
-    Servo marker;
-    Servo elbow;
-    Servo wrist;
-
     DigitalChannel latchingLimit;
     DigitalChannel deployingLimit;
-
-
-
 
     public BNO055IMUImpl imu;
     public BNO055IMUImpl.Parameters parameters = new BNO055IMUImpl.Parameters();
@@ -118,7 +110,10 @@ public class Rover {
 
     public static boolean isnotstopped;
 
-    public Rover(setupType... setup) throws InterruptedException {
+    public Rover(HardwareMap hardwareMap, ElapsedTime runtime, Central central, setupType... setup) throws InterruptedException {
+        this.hardwareMap = hardwareMap;
+        this.runtime = runtime;
+        this.central = central;
         for (setupType type : setup) {
             switch (type){
                 case drive:
@@ -176,15 +171,11 @@ public class Rover {
 
         motorDriveMode(EncoderMode.ON, motorFR, motorFL, motorBR, motorBL);
     }
-
     public void setupLatching() throws InterruptedException {
         rack = motor(rackS, DcMotorSimple.Direction.FORWARD);
 
         deployingLimit = hardwareMap.digitalChannel.get(deployingLimitS);//name it limit in config pls <3
-
         latchingLimit = hardwareMap.digitalChannel.get(latchingLimitS);
-
-        strafer = servo(straferS, DcMotorSimple.Direction.FORWARD, 0);
 
         encoder(EncoderMode.ON, rack);
 
@@ -194,14 +185,11 @@ public class Rover {
     public void setupMineralControl() throws InterruptedException{
         arm = motor(armS, DcMotorSimple.Direction.FORWARD);
 
-        elbow = servo(elbowS, Servo.Direction.FORWARD, 0, 1, 0.8);
-        wrist = servo(wristS, Servo.Direction.FORWARD, 0, 1, 0.8);
-
         encoder(EncoderMode.ON, arm);
     }
 
     public void setupMarker() throws InterruptedException{
-        marker = servo(markerS, Servo.Direction.FORWARD, 0, 1, 0.6);
+
     }
 
     public void setupIMU() throws InterruptedException{

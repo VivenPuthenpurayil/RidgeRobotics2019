@@ -48,6 +48,8 @@ public abstract class TeleOp extends Central{
 
         fb2 = Math.abs(yAxis2);
         rl2 = Math.abs(xAxis2);
+
+        diagonalSpeed = Math.hypot(xAxis2, yAxis2);
     }
 
 
