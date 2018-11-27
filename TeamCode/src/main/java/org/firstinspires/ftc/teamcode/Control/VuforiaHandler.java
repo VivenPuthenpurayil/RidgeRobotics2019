@@ -1,25 +1,15 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.Control;
 
-import android.content.pm.ActivityInfo;
-
-import com.disnodeteam.dogecv.CameraViewDisplay;
-import com.disnodeteam.dogecv.DogeCV;
-import com.disnodeteam.dogecv.detectors.roverrukus.SamplingOrderDetector;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.DigitalChannel;
-import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
-import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
-import org.firstinspires.ftc.teamcode.Central;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,44 +18,30 @@ import static org.firstinspires.ftc.robotcore.external.navigation.AngleUnit.DEGR
 import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.XYZ;
 import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.YZX;
 import static org.firstinspires.ftc.robotcore.external.navigation.AxesReference.EXTRINSIC;
-import static org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer.CameraDirection.BACK;
 import static org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer.CameraDirection.FRONT;
-@Autonomous(name="Auto Small Bot", group ="Smart")
-public class AutonomousSmallBot extends AutonomousControl {
-    /*just dont touch this part and we'll prb be ok????*/
-    List<VuforiaTrackable> allTrackables = new ArrayList<VuforiaTrackable>();
-    private static final String VUFORIA_KEY = "AUaoObT/////AAABmZESOvJAgkXJk00eebGyewdT7a9NZK5YLL9rnvWS5jwOFcmnubSqY4E8gnBkljxMEsVfBteT2JE95kMUrCT379Ya4Inep4AQqT2IQRvFD5lTr2PYVIWp9c6oe2f1C9T8M1aco5W/O4kU1kOf0UGikrcSheCnor0nc2siDkbfT8s1YRRZVXl56xrCw7Po6PsU4tkZJ9F2tp9YyMmowziEIjbeLJ+V3C51kRnNyiMuF3ev0Einp5ioXgW82RJMPiJLiiKZZP9ARLYGLsNX+nOFFJXRrKywydpwcWwlyAaHzWpSJ9yWgAMwFY1iN4BBq8VaFInXY+T40/g/WCBxM7WLkWNNOe44921UcyFGgjqxf/T2";
-
-    // Since ImageTarget trackables use mm to specifiy their dimensions, we must use mm for all the physical dimension.
-    // We will define some constants and conversions here
-    private static final float mmPerInch = 25.4f;
-    private static final float mmFTCFieldWidth = (12 * 6) * mmPerInch;       // the width of the FTC field (from the center point to the outer panels)
-    private static final float mmTargetHeight = (6) * mmPerInch;          // the height of the center of the target image above the floor
-
-    // Select which camera you want use.  The FRONT camera is the one on the same side as the screen.
-    // Valid choices are:  BACK or FRONT
-    private static final VuforiaLocalizer.CameraDirection CAMERA_CHOICE = BACK;
+import static org.firstinspires.ftc.teamcode.Control.Constants.*;
 
 
-    private OpenGLMatrix lastLocation = null;
-    private boolean targetVisible = false;
+public class VuforiaHandler {
 
+    public final int CAMERA_FORWARD_DISPLACEMENT, CAMERA_VERTICAL_DISPLACEMENT, CAMERA_LEFT_DISPLACEMENT;
+    private final HardwareMap hardwareMap;
+    private final Telemetry telemetry;
+
+    public OpenGLMatrix blueRoverLocationOnField, redFootprintLocationOnField, frontCratersLocationOnField, backSpaceLocationOnField, phoneLocationOnRobot;
+    public VuforiaTrackable blueRover, redFootprint, frontCraters, backSpace;
+    public VuforiaTrackables targetsRoverRuckus;
+    public List<VuforiaTrackable> allTrackables = new ArrayList<VuforiaTrackable>();
+    public OpenGLMatrix lastLocation = null;
+    public boolean targetVisible = false;
+    public VuforiaLocalizer vuforia;
     /**
      * {@link #vuforia} is the variable we will use to store our instance of the Vuforia
      * localization engine.
      */
-    VuforiaLocalizer vuforia;
-    //lol
-
-    private ElapsedTime runtime = new ElapsedTime();
-
-
-    @Override
-    public void runOpMode() throws InterruptedException {
-
-        setup(runtime, Rover.setupType.drive);
-
-
+    public VuforiaHandler(Central central) {
+        hardwareMap = central.hardwareMap;
+        telemetry = central.telemetry;
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
 
@@ -81,19 +57,21 @@ public class AutonomousSmallBot extends AutonomousControl {
 
         // Load the data sets that for the trackable objects. These particular data
         // sets are stored in the 'assets' part of our application.
-        VuforiaTrackables targetsRoverRuckus = this.vuforia.loadTrackablesFromAsset("RoverRuckus");
-        VuforiaTrackable blueRover = targetsRoverRuckus.get(0);
+        targetsRoverRuckus = this.vuforia.loadTrackablesFromAsset("RoverRuckus");
+        blueRover = targetsRoverRuckus.get(0);
         blueRover.setName("Blue-Rover");
-        VuforiaTrackable redFootprint = targetsRoverRuckus.get(1);
+        redFootprint = targetsRoverRuckus.get(1);
         redFootprint.setName("Red-Footprint");
-        VuforiaTrackable frontCraters = targetsRoverRuckus.get(2);
+        frontCraters = targetsRoverRuckus.get(2);
         frontCraters.setName("Front-Craters");
-        VuforiaTrackable backSpace = targetsRoverRuckus.get(3);
+        backSpace = targetsRoverRuckus.get(3);
         backSpace.setName("Back-Space");
 
         // For convenience, gather together all the trackable objects in one easily-iterable collection */
 
         allTrackables.addAll(targetsRoverRuckus);
+
+
 
         /**
          * In order for localization to work, we need to tell the system where each target is on the field, and
@@ -120,7 +98,7 @@ public class AutonomousSmallBot extends AutonomousControl {
          * - First we rotate it 90 around the field's X axis to flip it upright.
          * - Then, we translate it along the Y axis to the blue perimeter wall.
          */
-        OpenGLMatrix blueRoverLocationOnField = OpenGLMatrix
+        blueRoverLocationOnField = OpenGLMatrix
                 .translation(0, mmFTCFieldWidth, mmTargetHeight)
                 .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 0));
         blueRover.setLocation(blueRoverLocationOnField);
@@ -132,7 +110,7 @@ public class AutonomousSmallBot extends AutonomousControl {
          *   and facing inwards to the center of the field.
          * - Then, we translate it along the negative Y axis to the red perimeter wall.
          */
-        OpenGLMatrix redFootprintLocationOnField = OpenGLMatrix
+        redFootprintLocationOnField = OpenGLMatrix
                 .translation(0, -mmFTCFieldWidth, mmTargetHeight)
                 .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 180));
         redFootprint.setLocation(redFootprintLocationOnField);
@@ -144,7 +122,7 @@ public class AutonomousSmallBot extends AutonomousControl {
          *   and facing inwards to the center of the field.
          * - Then, we translate it along the negative X axis to the front perimeter wall.
          */
-        OpenGLMatrix frontCratersLocationOnField = OpenGLMatrix
+        frontCratersLocationOnField = OpenGLMatrix
                 .translation(-mmFTCFieldWidth, 0, mmTargetHeight)
                 .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 90));
         frontCraters.setLocation(frontCratersLocationOnField);
@@ -156,7 +134,7 @@ public class AutonomousSmallBot extends AutonomousControl {
          *   and facing inwards to the center of the field.
          * - Then, we translate it along the X axis to the back perimeter wall.
          */
-        OpenGLMatrix backSpaceLocationOnField = OpenGLMatrix
+        backSpaceLocationOnField = OpenGLMatrix
                 .translation(mmFTCFieldWidth, 0, mmTargetHeight)
                 .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, -90));
         backSpace.setLocation(backSpaceLocationOnField);
@@ -184,11 +162,11 @@ public class AutonomousSmallBot extends AutonomousControl {
          * In this example, it is centered (left to right), but 110 mm forward of the middle of the robot, and 200 mm above ground level.
          */
 
-        final int CAMERA_FORWARD_DISPLACEMENT = 110;   // eg: Camera is 110 mm in front of robot center
-        final int CAMERA_VERTICAL_DISPLACEMENT = 200;   // eg: Camera is 200 mm above ground
-        final int CAMERA_LEFT_DISPLACEMENT = 0;     // eg: Camera is ON the robot's center line
+        CAMERA_FORWARD_DISPLACEMENT = 110;   // eg: Camera is 110 mm in front of robot center
+        CAMERA_VERTICAL_DISPLACEMENT = 200;   // eg: Camera is 200 mm above ground
+        CAMERA_LEFT_DISPLACEMENT = 0;     // eg: Camera is ON the robot's center line
 
-        OpenGLMatrix phoneLocationOnRobot = OpenGLMatrix
+        phoneLocationOnRobot = OpenGLMatrix
                 .translation(CAMERA_FORWARD_DISPLACEMENT, CAMERA_LEFT_DISPLACEMENT, CAMERA_VERTICAL_DISPLACEMENT)
                 .multiplied(Orientation.getRotationMatrix(EXTRINSIC, YZX, DEGREES,
                         CAMERA_CHOICE == FRONT ? 90 : -90, 0, 0));
@@ -198,22 +176,25 @@ public class AutonomousSmallBot extends AutonomousControl {
             ((VuforiaTrackableDefaultListener) trackable.getListener()).setPhoneInformation(phoneLocationOnRobot, parameters.cameraDirection);
         }
 
-        /** Wait for the game to begin */
-        telemetry.addData(">", "Press Play to start tracking");
-        telemetry.update();
-        waitForStart();
 
-        /** Start tracking the data sets we care about. */
-        targetsRoverRuckus.activate();
 
-        while (opModeIsActive()) {
-            deployLander();
-            angleOfLander();
-            rob.driveTrainEncoderMovement(0.5, 15, 10, 1, Rover.movements.forward);
-            sampling();
-            goToCraterOtherSide();
+    }
+    public void checkVisibility() throws InterruptedException{
+        targetVisible = false;
+        for (VuforiaTrackable trackable : allTrackables) {
+            if (((VuforiaTrackableDefaultListener)trackable.getListener()).isVisible()) {
+                telemetry.addData("Visible Target", trackable.getName());
+                targetVisible = true;
+
+                // getUpdatedRobotLocation() will return null if no new information is available since
+                // the last time that call was made, or if the trackable is not currently visible.
+                OpenGLMatrix robotLocationTransform = ((VuforiaTrackableDefaultListener)trackable.getListener()).getUpdatedRobotLocation();
+                if (robotLocationTransform != null) {
+                    lastLocation = robotLocationTransform;
+                }
+                break;
+            }
         }
     }
 }
-
 

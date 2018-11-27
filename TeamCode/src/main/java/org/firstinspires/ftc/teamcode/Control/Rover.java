@@ -1,9 +1,7 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.Control;
 
-import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.bosch.BNO055IMUImpl;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -13,7 +11,6 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
@@ -21,13 +18,13 @@ import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
 import java.util.Arrays;
 
-import static org.firstinspires.ftc.teamcode.Constants.*;
+import static org.firstinspires.ftc.teamcode.Control.Constants.*;
 
 public class Rover {
-    ElapsedTime runtime;
-    Central central;
+    public ElapsedTime runtime;
+    public Central central;
     public float initorient;
-
+    public boolean vuforiaMode;
 
 
     public void setCentral(Central central) {
@@ -57,8 +54,8 @@ public class Rover {
         ccwback(1,1,0,0),
         cwfront(0,0,-1,-1),
         ccwfront(0,0,1,1),
-        rackDown(-1),
-        rackUp(1),
+        rackExtend(-1),
+        rackCompress(1),
         forward2(1, -1),
         back2(-1, 1),
         cw2(1,1),
@@ -98,17 +95,21 @@ public class Rover {
     public DcMotor motorBR;
     public DcMotor motorBL;
 
-    DcMotor rack;
-    DcMotor arm;
+    public DcMotor marker;
 
-    DigitalChannel latchingLimit;
-    DigitalChannel deployingLimit;
+    public DcMotor rack;
+    public DcMotor arm;
+
+    public DigitalChannel latchingLimit;
+    public DigitalChannel deployingLimit;
 
     public BNO055IMUImpl imu;
     public BNO055IMUImpl.Parameters parameters = new BNO055IMUImpl.Parameters();
     public Orientation current;
 
     public static boolean isnotstopped;
+
+    public VuforiaHandler vuforia;
 
     public Rover(HardwareMap hardwareMap, ElapsedTime runtime, Central central, setupType... setup) throws InterruptedException {
         this.hardwareMap = hardwareMap;
@@ -140,6 +141,8 @@ public class Rover {
                     setupVuforia();
                     break;
 
+                case sensors:
+                    setupSensors();
 
 
 
@@ -147,16 +150,28 @@ public class Rover {
         }
     }
 
-    public void initializeLatching() throws InterruptedException{
-        while(!latchingLimit.getState())
+    public void setupSensors() {
+
+    }
+
+    public void latch() throws InterruptedException{
+        while(!latchingLimit.getState() && central.opModeIsActive())
         {
-            anyMovement(0.8, Rover.movements.rackUp, rack);
+            anyMovement(0.8, Rover.movements.rackCompress, rack);
+        }
+        rack.setPower(0);
+    }
+    public void deploy() throws InterruptedException{
+        while(!deployingLimit.getState() && central.opModeIsActive())
+        {
+            anyMovement(0.8, movements.rackExtend, rack);
         }
         rack.setPower(0);
     }
 
     public void setupVuforia() {
-
+        vuforia = new VuforiaHandler(central);
+        vuforiaMode=  true;
     }
 
 
@@ -179,7 +194,7 @@ public class Rover {
 
         encoder(EncoderMode.ON, rack);
 
-        initializeLatching();
+        latch();
     }
 
     public void setupMineralControl() throws InterruptedException{

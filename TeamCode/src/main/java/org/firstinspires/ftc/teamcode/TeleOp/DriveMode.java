@@ -1,26 +1,23 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.TeleOp;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
 
-import static org.firstinspires.ftc.teamcode.Constants.*;
+import org.firstinspires.ftc.teamcode.Control.TeleOpControl;
+import org.firstinspires.ftc.teamcode.Control.Rover;
+
+import static org.firstinspires.ftc.teamcode.Control.Constants.*;
 
 
 @Autonomous(name = "DriveMode", group = "Smart")
 
-public class DriveMode extends TeleOp {
+public class DriveMode extends TeleOpControl {
 
 
-    ElapsedTime runtime = new ElapsedTime();
+    private ElapsedTime runtime = new ElapsedTime();
     public void runOpMode() throws InterruptedException{
 
-        setup(runtime, Rover.setupType.drive);
-
-        waitForStart();
+        setup(runtime, Rover.setupType.drive, Rover.setupType.latching);
 
 
         while (opModeIsActive()) {
@@ -70,6 +67,15 @@ public class DriveMode extends TeleOp {
             }
 
 
+            if(gamepad1.a){
+                rob.rack.setPower(1);
+            }
+            else if (gamepad1.y){
+                rob.rack.setPower(-1);
+            }
+            else {
+                rob.rack.setPower(0);
+            }
         }
     }
 
