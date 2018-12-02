@@ -18,7 +18,7 @@ public class DriveMode extends TeleOpControl {
     private ElapsedTime runtime = new ElapsedTime();
     public void runOpMode() throws InterruptedException{
 
-        setup(runtime, Rover.setupType.drive, Rover.setupType.latching);
+        setup(runtime, Rover.setupType.drive, Rover.setupType.latching, Rover.setupType.mineralControl);
 
 
         while (opModeIsActive()) {
@@ -65,6 +65,38 @@ public class DriveMode extends TeleOpControl {
                 }
             } else {
                 rob.stopDrivetrain();
+            }
+
+
+            if (gamepad1.right_trigger > 0.25){
+                rob.linear.setPower(0.4);
+            }
+            else if (gamepad1.left_trigger > 0.25){
+                rob.linear.setPower(-0.4);
+            }
+            else {
+                rob.linear.setPower(0);
+            }
+
+            if (gamepad1.x){
+                rob.collector.setPower(0.6);
+            }
+            else if (gamepad1.b){
+                rob.collector.setPower(-0.6);
+            }
+            else {
+                rob.collector.setPower(0);
+            }
+
+
+            if (gamepad1.dpad_right){
+                rob.arm.setPower(0.4);
+            }
+            else if (gamepad1.dpad_left){
+                rob.arm.setPower(-0.4);
+            }
+            else {
+                rob.arm.setPower(0);
             }
 
 

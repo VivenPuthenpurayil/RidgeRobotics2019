@@ -17,21 +17,33 @@ public abstract class AutonomousControl extends Central {
 
 
     public void angleOfLander() throws InterruptedException {
-        rob.vuforia.checkVisibility();
-        VectorF translation = rob.vuforia.lastLocation.getTranslation();
-        telemetry.addData("Pos (in)", "{X, Y, Z} = %.1f, %.1f, %.1f",
-                translation.get(0) / mmPerInch, translation.get(1) / mmPerInch, translation.get(2) / mmPerInch);
+        double x = runtime.seconds();
+        while (runtime.seconds() <= x + 3 &&opModeIsActive()) {
+            while (rob.vuforia.checkVisibility() && opModeIsActive()) {
+                VectorF translation = rob.vuforia.lastLocation.getTranslation();
+                telemetry.addData("Pos (in)", "{X, Y, Z} = %.1f, %.1f, %.1f",
+                        translation.get(0) / mmPerInch, translation.get(1) / mmPerInch, translation.get(2) / mmPerInch);
 
-        // express the rotation of the robot in degrees.
-        Orientation rotation = Orientation.getOrientation(rob.vuforia.lastLocation, EXTRINSIC, XYZ, DEGREES);
-        telemetry.addData("Rot (deg)", "{Roll, Pitch, Heading} = %.0f, %.0f, %.0f", rotation.firstAngle, rotation.secondAngle, rotation.thirdAngle);
+                // express the rotation of the robot in degrees.
+                Orientation rotation = Orientation.getOrientation(rob.vuforia.lastLocation, EXTRINSIC, XYZ, DEGREES);
+                telemetry.addData("Rot (deg)", "{Roll, Pitch, Heading} = %.0f, %.0f, %.0f", rotation.firstAngle, rotation.secondAngle, rotation.thirdAngle);
+                telemetry.update();
+                if (rotation.thirdAngle < 20 || rotation.thirdAngle > 25 && opModeIsActive()) {
+                    rob.driveTrainMovement(0.2, Rover.movements.cw);
 
-        telemetry.update();
-        if (rotation.thirdAngle > 200 && rotation.thirdAngle < 205) {
-            rob.driveTrainMovement(0.2, Rover.movements.cw);
-        } else {
-            rob.stopDrivetrain();
+                }
+                else {
+                    rob.stopDrivetrain();
+                    break;
+                }
+
+
+
+            }
+
+
         }
+
     }
 
     public void centerPosition() throws InterruptedException {

@@ -104,6 +104,8 @@ public class Rover {
     public DcMotor motorBR;
     public DcMotor motorBL;
 
+    public float StrafetoTotalPower = 2/3;
+
     //----  MINERAL CONTROL ----
 
     public DcMotor arm;
@@ -560,8 +562,24 @@ public class Rover {
     // movement but now its better???
 
     public double[] superstrafe( double dir, double velo){
-        double [] retval= {Math.cos(Math.toDegrees(dir)),Math.sin(Math.toDegrees(dir)),Math.sin(Math.toDegrees(dir)),Math.cos(Math.toDegrees(dir))};
+        double coeff=velo*StrafetoTotalPower;
+        double [] retval= {coeff*Math.cos(Math.toDegrees(dir)),coeff*Math.sin(Math.toDegrees(dir)),coeff*Math.sin(Math.toDegrees(dir)),coeff*Math.cos(Math.toDegrees(dir))};
         return retval;
+    }
+
+    public double[] superturn(double angvelo) { //
+        double coeff = angvelo * (1 - StrafetoTotalPower);
+        double[] retval = {coeff, -coeff, coeff, -coeff};
+        return retval;
+    }
+
+    public void superstrafe(double dir, double velo, double angvelo){
+        float angle = (360+imu.getAngularOrientation(AxesReference.INTRINSIC,AxesOrder.XYZ,AngleUnit.DEGREES).thirdAngle)%360;
+        double[] comp1=superstrafe(dir-angle,velo);
+        double[] comp2=superturn(angvelo);
+        for(int i=0;i<4;i++) {
+            drivetrain[i].setPower(comp1[i]+comp2[i]);
+        }
     }
     public enum turnside {
         ccw, cw

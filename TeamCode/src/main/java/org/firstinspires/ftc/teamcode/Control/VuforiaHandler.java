@@ -179,7 +179,7 @@ public class VuforiaHandler {
 
 
     }
-    public void checkVisibility() throws InterruptedException{
+    public boolean checkVisibility() throws InterruptedException{
         targetVisible = false;
         for (VuforiaTrackable trackable : allTrackables) {
             if (((VuforiaTrackableDefaultListener)trackable.getListener()).isVisible()) {
@@ -195,6 +195,7 @@ public class VuforiaHandler {
                 break;
             }
         }
+        return targetVisible;
     }
 }
 
