@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Tests.System;
+package org.firstinspires.ftc.teamcode.Tests.Functionality;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -6,10 +6,12 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.Control.Test;
+
 
 @Autonomous(name = "Rack And Pinion", group = "Smart")
 
-public class Test_RackAndPinion extends LinearOpMode {
+public class Test_RackAndPinion extends Test {
 
     public ElapsedTime runtime = new ElapsedTime();
     DcMotor rack;
@@ -26,10 +28,10 @@ public class Test_RackAndPinion extends LinearOpMode {
         while (opModeIsActive()) {
 
             if (gamepad1.a) {
-                rack.setPower(0.4);
+                rack.setPower(0.9);
             }
             else if (gamepad1.y){
-                rack.setPower(-0.4);
+                rack.setPower(-0.9);
             }
             else {
                 rack.setPower(0);

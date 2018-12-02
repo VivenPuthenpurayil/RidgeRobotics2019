@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Tests.System;
+package org.firstinspires.ftc.teamcode.Tests.Functionality;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.util.ElapsedTime;

@@ -30,7 +30,7 @@ public class AutonomousSmallBot extends AutonomousControl {
     @Override
     public void runOpMode() throws InterruptedException {
 
-        setup(runtime, Rover.setupType.drive, Rover.setupType.vuforia);
+        setup(runtime, Rover.setupType.drive, Rover.setupType.latching, Rover.setupType.vuforia);
 
         while (opModeIsActive()) {
             rob.deploy();

@@ -10,10 +10,11 @@ import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
-
+import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
 import java.util.Arrays;
@@ -21,100 +22,13 @@ import java.util.Arrays;
 import static org.firstinspires.ftc.teamcode.Control.Constants.*;
 
 public class Rover {
-    public ElapsedTime runtime;
-    public Central central;
-    public float initorient;
-    public boolean vuforiaMode;
-
-
-    public void setCentral(Central central) {
-        this.central = central;
-    }
-
-    public void setHardwareMap(HardwareMap hardwareMap) {
-        this.hardwareMap = hardwareMap;
-    }
-
-    public void setRuntime(ElapsedTime runtime) {
-        this.runtime = runtime;
-    }
-
-    public enum movements{
-        backward(-1, 1, -1, 1),
-        forward(1, -1, 1, -1),
-        left(1, 1, -1, -1),
-        right(-1, -1, 1, 1),
-        tr(0, -1, 1, 0),
-        tl(1, 0, 0, -1),
-        br(-1, 0, 0, 1),
-        bl(0, 1, -1, 0),
-        ccw(-1, -1, -1, -1),
-        cw(1, 1, 1, 1),
-        cwback(-1,-1,0,0),
-        ccwback(1,1,0,0),
-        cwfront(0,0,-1,-1),
-        ccwfront(0,0,1,1),
-        rackExtend(-1),
-        rackCompress(1),
-        forward2(1, -1),
-        back2(-1, 1),
-        cw2(1,1),
-        ccw2(-1, -1);
-
-
-        private final double[] directions;
-
-        movements(double... signs){
-            this.directions = signs;
-        }
-
-        public double[] getDirections(){
-            return directions;
-        }
-    }
-    public enum turnside {
-        ccw, cw
-    }
-
-    public enum axis {
-        front, center, back
-    }
-    public HardwareMap hardwareMap;
-
-
-    public void setRack(DcMotor rack) {
-        this.rack = rack;
-    }
-
-    public void setArm(DcMotor arm) {
-        this.arm = arm;
-    }
-
-    public DcMotor motorFR;
-    public DcMotor motorFL;
-    public DcMotor motorBR;
-    public DcMotor motorBL;
-
-    public DcMotor marker;
-
-    public DcMotor rack;
-    public DcMotor arm;
-
-    public DigitalChannel latchingLimit;
-    public DigitalChannel deployingLimit;
-
-    public BNO055IMUImpl imu;
-    public BNO055IMUImpl.Parameters parameters = new BNO055IMUImpl.Parameters();
-    public Orientation current;
-
-    public static boolean isnotstopped;
-
-    public VuforiaHandler vuforia;
 
     public Rover(HardwareMap hardwareMap, ElapsedTime runtime, Central central, setupType... setup) throws InterruptedException {
         this.hardwareMap = hardwareMap;
         this.runtime = runtime;
         this.central = central;
+
+        StringBuilder i = new StringBuilder();
         for (setupType type : setup) {
             switch (type){
                 case drive:
@@ -129,10 +43,6 @@ public class Rover {
                     setupMineralControl();
                     break;
 
-
-                case marker:
-                    setupMarker();
-                    break;
                 case imu:
                     setupIMU();
                     break;
@@ -143,16 +53,88 @@ public class Rover {
 
                 case sensors:
                     setupSensors();
+                    break;
 
+
+                case autonomous:
+                    setupLatching();
+                    setupIMU();
+                    setupDrivetrain();
+                    setupMineralControl();
+                    setupVuforia();
+                    setupPhone();
+                    setupSensors();
+                    break;
 
 
             }
+            i.append(type.name()).append(" ");
         }
+        central.telemetry.addLine(i.toString());
+        central.telemetry.update();
+
+
     }
 
-    public void setupSensors() {
 
-    }
+    // important non-configuration fields
+    public ElapsedTime runtime;     //set in constructor to the runtime of running class
+    public Central central;         //set in constructor to the runtime of running class
+    public HardwareMap hardwareMap; //set in constructor to the runtime of running class
+
+
+    //----specfic non-configuration fields
+    //none rn
+
+
+
+    //----------------CONFIGURATION FIELDS--------------------
+
+
+    //----  MAPPING         ----
+    ModernRoboticsI2cRangeSensor rangeSensorfront;
+    ModernRoboticsI2cRangeSensor rangeSensorback;
+
+
+    //----  DRIVE           ----
+    public  DcMotor[] drivetrain;   //set in motorDriveMode() for drivetrain movement functions
+
+    public DcMotor motorFR;
+    public DcMotor motorFL;
+    public DcMotor motorBR;
+    public DcMotor motorBL;
+
+    //----  MINERAL CONTROL ----
+
+    public DcMotor arm;
+    public DcMotor linear;
+    public DcMotor collector;
+
+    //----  LATCHING SYSTEM ----
+    public DcMotor rack;
+
+    public DigitalChannel latchingLimit;
+    public DigitalChannel deployingLimit;
+
+    //----       IMU        ----
+
+    public BNO055IMUImpl imu;
+    public BNO055IMUImpl.Parameters parameters = new BNO055IMUImpl.Parameters();
+    public Orientation current;
+    public static boolean isnotstopped;
+
+    //----  PHONE SWIVEL    ----
+    public Servo phoneSwivel;
+
+    //---- VUFORIA HANDLER  ----
+    public VuforiaHandler vuforia;
+    public boolean vuforiaMode;
+    public float initorient;
+
+
+
+
+    //-----         LATCHING FUNCTIONS          --------------
 
     public void latch() throws InterruptedException{
         while(!latchingLimit.getState() && central.opModeIsActive())
@@ -167,16 +149,40 @@ public class Rover {
             anyMovement(0.8, movements.rackExtend, rack);
         }
         rack.setPower(0);
+        driveTrainEncoderMovement(0.3, 6, 6, 200, movements.right);
+        driveTrainEncoderMovement(0.3, 3, 6, 200, movements.forward);
+        driveTrainEncoderMovement(0.3, 6, 6, 200, movements.left);
+
+    }
+
+    //------        MAPPING FUNCTIONS           --------------
+
+    public double rangeDistancefront(){
+        return rangeSensorfront.getDistance(DistanceUnit.CM);
+    }
+    public double rangeDistanceback(){
+        return rangeSensorback.getDistance(DistanceUnit.CM);
+    }
+
+
+    //----          SETUP FUNCTIONS             --------------
+
+    public void setupPhone() throws InterruptedException {
+        phoneSwivel = servo(phoneSwivelS, Servo.Direction.FORWARD, 0, 1, 0);
+
+    }
+
+    public void setupSensors() {
+
+        rangeSensorfront = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "frontRange");
+        rangeSensorback = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "backRange");
+
     }
 
     public void setupVuforia() {
         vuforia = new VuforiaHandler(central);
-        vuforiaMode=  true;
+        vuforiaMode = true;
     }
-
-
-    public  DcMotor[] drivetrain;
-
 
     public void setupDrivetrain() throws InterruptedException {
         motorFR = motor(motorFRS, DcMotorSimple.Direction.FORWARD);
@@ -189,18 +195,22 @@ public class Rover {
     public void setupLatching() throws InterruptedException {
         rack = motor(rackS, DcMotorSimple.Direction.FORWARD);
 
-        deployingLimit = hardwareMap.digitalChannel.get(deployingLimitS);//name it limit in config pls <3
-        latchingLimit = hardwareMap.digitalChannel.get(latchingLimitS);
+        //deployingLimit = hardwareMap.digitalChannel.get(deployingLimitS);//name it limit in config pls <3
+        //latchingLimit = hardwareMap.digitalChannel.get(latchingLimitS);
 
         encoder(EncoderMode.ON, rack);
 
-        latch();
+        //latch();
     }
 
     public void setupMineralControl() throws InterruptedException{
         arm = motor(armS, DcMotorSimple.Direction.FORWARD);
+        linear = motor(linearS, DcMotorSimple.Direction.FORWARD);
+        collector = motor(collectorS, DcMotorSimple.Direction.FORWARD);
+
 
         encoder(EncoderMode.ON, arm);
+
     }
 
     public void setupMarker() throws InterruptedException{
@@ -253,7 +263,6 @@ public class Rover {
 
         return hardwareMap.get(ModernRoboticsI2cRangeSensor.class, name);
     }
-
     public void encoder(EncoderMode mode, DcMotor... motor) throws InterruptedException {
         switch (mode) {
             case ON:
@@ -489,5 +498,76 @@ public class Rover {
     }
 
 
+    //-------------------SET FUNCTIONS--------------------------------
+    public void setCentral(Central central) {
+        this.central = central;
+    }
 
+    public void setHardwareMap(HardwareMap hardwareMap) {
+        this.hardwareMap = hardwareMap;
+    }
+
+    public void setRuntime(ElapsedTime runtime) {
+        this.runtime = runtime;
+    }
+
+
+
+    public void setRack(DcMotor rack) {
+        this.rack = rack;
+    }
+
+    public void setArm(DcMotor arm) {
+        this.arm = arm;
+    }
+    //-------------------CHOICE ENUMS-------------------------
+
+
+    public enum movements{
+        backward(-1, 1, -1, 1),
+        forward(1, -1, 1, -1),
+        left(1, 1, -1, -1),
+        right(-1, -1, 1, 1),
+        tr(0, -1, 1, 0),
+        tl(1, 0, 0, -1),
+        br(-1, 0, 0, 1),
+        bl(0, 1, -1, 0),
+        ccw(-1, -1, -1, -1),
+        cw(1, 1, 1, 1),
+        cwback(-1,-1,0,0),
+        ccwback(1,1,0,0),
+        cwfront(0,0,-1,-1),
+        ccwfront(0,0,1,1),
+        rackExtend(-1),
+        rackCompress(1),
+        forward2(1, -1),
+        back2(-1, 1),
+        cw2(1,1),
+        ccw2(-1, -1);
+
+
+        private final double[] directions;
+
+        movements(double... signs){
+            this.directions = signs;
+        }
+
+        public double[] getDirections(){
+            return directions;
+        }
+    }
+
+    // movement but now its better???
+
+    public double[] superstrafe( double dir, double velo){
+        double [] retval= {Math.cos(Math.toDegrees(dir)),Math.sin(Math.toDegrees(dir)),Math.sin(Math.toDegrees(dir)),Math.cos(Math.toDegrees(dir))};
+        return retval;
+    }
+    public enum turnside {
+        ccw, cw
+    }
+
+    public enum axis {
+        front, center, back
+    }
 }

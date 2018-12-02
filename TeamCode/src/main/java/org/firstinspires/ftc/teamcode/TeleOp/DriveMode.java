@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.TeleOp;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.Control.TeleOpControl;
@@ -9,7 +10,7 @@ import org.firstinspires.ftc.teamcode.Control.Rover;
 import static org.firstinspires.ftc.teamcode.Control.Constants.*;
 
 
-@Autonomous(name = "DriveMode", group = "Smart")
+@TeleOp(name = "DriveMode", group = "Smart")
 
 public class DriveMode extends TeleOpControl {
 

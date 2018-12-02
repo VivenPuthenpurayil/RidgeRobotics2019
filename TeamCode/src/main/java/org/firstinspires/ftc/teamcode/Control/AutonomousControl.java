@@ -119,17 +119,17 @@ public abstract class AutonomousControl extends Central {
     }
 
     public void sampling () throws InterruptedException {
-        SamplingOrderDetector VivenIsDumb = new SamplingOrderDetector();
-        VivenIsDumb.init(hardwareMap.appContext, CameraViewDisplay.getInstance());
-        VivenIsDumb.useDefaults();
-        VivenIsDumb.downscale = 0.4;
-        VivenIsDumb.areaScoringMethod = DogeCV.AreaScoringMethod.MAX_AREA;
-        VivenIsDumb.maxAreaScorer.weight = 0.005;
-        VivenIsDumb.ratioScorer.weight = 5;
-        VivenIsDumb.ratioScorer.perfectRatio = 1.0;
-        VivenIsDumb.enable();
+        SamplingOrderDetector detector = new SamplingOrderDetector();
+        detector.init(hardwareMap.appContext, CameraViewDisplay.getInstance());
+        detector.useDefaults();
+        detector.downscale = 0.4;
+        detector.areaScoringMethod = DogeCV.AreaScoringMethod.MAX_AREA;
+        detector.maxAreaScorer.weight = 0.005;
+        detector.ratioScorer.weight = 5;
+        detector.ratioScorer.perfectRatio = 1.0;
+        detector.enable();
 
-        switch(VivenIsDumb.getCurrentOrder()){
+        switch(detector.getCurrentOrder()){
             case LEFT:
                 leftPosition();
                 knockingOffLeft();
