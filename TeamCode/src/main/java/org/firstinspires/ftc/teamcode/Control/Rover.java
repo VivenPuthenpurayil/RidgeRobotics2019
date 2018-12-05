@@ -104,7 +104,10 @@ public class Rover {
     public DcMotor motorBR;
     public DcMotor motorBL;
 
-    public float StrafetoTotalPower = 2/3;
+    public double StrafetoTotalPower = 2/3;
+    public double mecanumAngle = 36; //from forwards, in degrees
+    public double communism = StrafetoTotalPower*Math.cos(Math.toRadians(mecanumAngle*2));
+
 
     //----  MINERAL CONTROL ----
 
@@ -562,8 +565,10 @@ public class Rover {
     // movement but now its better???
 
     public double[] superstrafe( double dir, double velo){
-        double coeff=velo*StrafetoTotalPower;
-        double [] retval= {coeff*Math.cos(Math.toDegrees(dir)),coeff*Math.sin(Math.toDegrees(dir)),coeff*Math.sin(Math.toDegrees(dir)),coeff*Math.cos(Math.toDegrees(dir))};
+        double yeet = communism/Math.sin(Math.toRadians(180-2*mecanumAngle));
+        double left = velo*yeet*Math.sin(Math.toRadians(mecanumAngle-dir));
+        double right = velo*yeet*Math.sin(Math.toRadians(mecanumAngle+dir));
+        double [] retval= {left,right,right,left};
         return retval;
     }
 

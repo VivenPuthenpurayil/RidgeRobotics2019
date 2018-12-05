@@ -162,8 +162,8 @@ public class VuforiaHandler {
          * In this example, it is centered (left to right), but 110 mm forward of the middle of the robot, and 200 mm above ground level.
          */
 
-        CAMERA_FORWARD_DISPLACEMENT = 110;   // eg: Camera is 110 mm in front of robot center
-        CAMERA_VERTICAL_DISPLACEMENT = 200;   // eg: Camera is 200 mm above ground
+        CAMERA_FORWARD_DISPLACEMENT = 0;   // eg: Camera is 110 mm in front of robot center
+        CAMERA_VERTICAL_DISPLACEMENT = 0;   // eg: Camera is 200 mm above ground
         CAMERA_LEFT_DISPLACEMENT = 0;     // eg: Camera is ON the robot's center line
 
         phoneLocationOnRobot = OpenGLMatrix

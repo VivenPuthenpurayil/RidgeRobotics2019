@@ -28,8 +28,16 @@ public abstract class AutonomousControl extends Central {
                 Orientation rotation = Orientation.getOrientation(rob.vuforia.lastLocation, EXTRINSIC, XYZ, DEGREES);
                 telemetry.addData("Rot (deg)", "{Roll, Pitch, Heading} = %.0f, %.0f, %.0f", rotation.firstAngle, rotation.secondAngle, rotation.thirdAngle);
                 telemetry.update();
-                if (rotation.thirdAngle < 20 || rotation.thirdAngle > 25 && opModeIsActive()) {
+                if (rotation.thirdAngle > 25 && opModeIsActive()) {
                     rob.driveTrainMovement(0.2, Rover.movements.cw);
+                    telemetry.addLine("CW");
+                    telemetry.update();
+
+
+                }else if(rotation.thirdAngle < 20 && opModeIsActive()){
+                    rob.driveTrainMovement(0.2, Rover.movements.ccw);
+                    telemetry.addLine("CCW");
+                    telemetry.update();
 
                 }
                 else {
