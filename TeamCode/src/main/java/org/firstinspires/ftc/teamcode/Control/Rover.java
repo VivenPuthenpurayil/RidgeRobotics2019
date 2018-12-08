@@ -76,6 +76,12 @@ public class Rover {
 
     }
 
+    public Rover(HardwareMap hardwareMap, ElapsedTime runtime, Central central) throws InterruptedException {
+        this.hardwareMap = hardwareMap;
+        this.runtime = runtime;
+        this.central = central;
+
+    }
 
     // important non-configuration fields
     public ElapsedTime runtime;     //set in constructor to the runtime of running class
@@ -231,6 +237,8 @@ public class Rover {
         imu = hardwareMap.get(BNO055IMUImpl.class, imuS);
         imu.initialize(parameters);
         initorient = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle;
+        central.telemetry.addData("IMU status", imu.getSystemStatus());
+        central.telemetry.update();
 
     }
 

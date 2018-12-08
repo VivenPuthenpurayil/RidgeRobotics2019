@@ -37,8 +37,7 @@ public class DriveMode extends TeleOpControl {
 
                 if (yAxis1 >= Math.abs(xAxis1)) {
                     rob.driveTrainMovement(fb,Rover.movements.forward);
-                    //FORWARD
-                } else if (yAxis1 <= -Math.abs(xAxis1)) {
+                    //FORWARD} else if (yAxis1 <= -Math.abs(xAxis1)) {
                     rob.driveTrainMovement(fb,Rover.movements.backward);
                     //BACKWARD
                 } else if (Math.abs(yAxis1) < xAxis1) {

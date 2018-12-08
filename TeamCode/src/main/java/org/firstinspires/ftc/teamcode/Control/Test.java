@@ -13,6 +13,8 @@ public abstract class Test extends Central {
 
     private DcMotor[] drivetrain;
 
+    public Rover.movements[] allMovements = {Rover.movements.forward, Rover.movements.backward, Rover.movements.right, Rover.movements.left, Rover.movements.tr, Rover.movements.bl, Rover.movements.tl, Rover.movements.br,Rover.movements.cw, Rover.movements.ccw};
+
     public DcMotor motor(String name, DcMotor.Direction direction) throws InterruptedException {
         DcMotor motor = hardwareMap.dcMotor.get(name);
         motor.setDirection(DcMotor.Direction.FORWARD);
