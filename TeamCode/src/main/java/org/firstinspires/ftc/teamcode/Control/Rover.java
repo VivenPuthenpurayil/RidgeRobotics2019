@@ -11,14 +11,20 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
+
+import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.ftc.teamcode.TeleOp.Positions;
 
 import java.util.Arrays;
 
+import static org.firstinspires.ftc.robotcore.external.navigation.AngleUnit.DEGREES;
+import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.XYZ;
+import static org.firstinspires.ftc.robotcore.external.navigation.AxesReference.EXTRINSIC;
 import static org.firstinspires.ftc.teamcode.Control.Constants.*;
 
 public class Rover {
@@ -100,6 +106,8 @@ public class Rover {
     //----  MAPPING         ----
     ModernRoboticsI2cRangeSensor rangeSensorfront;
     ModernRoboticsI2cRangeSensor rangeSensorback;
+    ModernRoboticsI2cRangeSensor rangeSensorright;
+    ModernRoboticsI2cRangeSensor rangeSensorleft;
 
 
     //----  DRIVE           ----
@@ -174,6 +182,12 @@ public class Rover {
     public double rangeDistanceback(){
         return rangeSensorback.getDistance(DistanceUnit.CM);
     }
+    public double rangeDistanceright(){
+        return rangeSensorright.getDistance(DistanceUnit.CM);
+    }
+    public double rangeDistanceleft(){
+        return rangeSensorleft.getDistance(DistanceUnit.CM);
+    }
 
 
     //----          SETUP FUNCTIONS             --------------
@@ -188,6 +202,8 @@ public class Rover {
         rangeSensorfront = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "frontRange");
         rangeSensorback = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "backRange");
 
+        rangeSensorright = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "rightRange");
+        rangeSensorleft = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "leftRange");
     }
 
     public void setupVuforia() {
@@ -601,4 +617,220 @@ public class Rover {
     public enum axis {
         front, center, back
     }
+
+
+
+    //-----------------------------------Mapping------------------------------------------------
+    public static class Position{
+        double[] vector;
+        double orient;
+
+        public Position(double[] vector, double orient) {
+            this.vector = vector;
+            this.orient = orient;
+        }
+        double[] returnv(){
+            return vector;
+
+        }
+        double returno(){
+
+            return orient;
+        }
+
+        void updateOrient(double o){
+            orient = o;
+
+        }
+
+
+    }
+
+    public Position getCurrentPosition() throws InterruptedException{
+        if(!vuforia.checkVisibility().equals("false")){
+            VectorF translation = vuforia.lastLocation.getTranslation();
+
+            Orientation rotation = Orientation.getOrientation(vuforia.lastLocation, EXTRINSIC, XYZ, DEGREES);
+
+            return  vuftopos((double)(translation.get(0)/mmPerInch), (double)(translation.get(1)/mmPerInch) ,(double)(translation.get(2) / mmPerInch), rotation.thirdAngle,vuforia.checkVisibility() );
+        }
+ else{
+            return null;
+        }
+        }
+    public static Position vuftopos(double xtrans, double ytrans, double ztrans, double orientation, String id) {
+        double v[] = new double[3];
+        if (id.equals("Back-Space")) {
+            v[0] = -xtrans;
+            v[1] = -ytrans;
+            v[2] = ztrans;
+            return new Position(v, orientation + 180);
+
+        } else if (id.equals("Red-Footprint")) {
+            v[0] = -ytrans;
+            v[1] = xtrans;
+            v[2] = ztrans;
+            return new Position(v, orientation + 90);
+
+        } else if (id.equals("Front-Craters")) {
+            v[0] = xtrans;
+            v[1] = ytrans;
+            v[2] = ztrans;
+            return new Position(v, orientation);
+
+        } else if (id.equals("Blue-Rover")) {
+            v[0] = ytrans;
+            v[1] = -xtrans;
+            v[2] = ztrans;
+            return new Position(v, -orientation - 180);
+
+        }
+        else {
+            return null;
+        }
+    }
+
+    public  Position currentabspossensors(int orient){
+        //only use when snapped to nearest axis
+        double[] w = new double[3];
+        if(orient == 90){
+          if(rangeDistanceright() > rangeDistanceleft()){
+              w[0] = -72 + rangeDistanceleft();
+              w[1] = 72-rangeDistancefront();
+
+          }
+          else {
+              w[0] = 72 - rangeDistanceright();
+              w[1] = 72-rangeDistancefront();
+
+
+          }
+
+        }
+        if(orient == 0){
+            if(rangeDistanceright() > rangeDistanceleft()){
+                w[1] = 72 - rangeDistanceleft();
+                w[0] = 72-rangeDistancefront();
+
+            }
+            else {
+                w[1] = -72 + rangeDistanceright();
+                w[0] = 72-rangeDistancefront();
+
+
+            }
+
+        }
+        if(orient == -90){
+            if(rangeDistanceright() > rangeDistanceleft()){
+                w[0] = 72 - rangeDistanceleft();
+                w[1] = -72 + rangeDistancefront();
+
+            }
+            else {
+                w[0] = -72 + rangeDistanceright();
+                w[1] = -72+rangeDistancefront();
+
+
+            }
+
+        }
+        if(orient == 180){
+            if(rangeDistanceright() > rangeDistanceleft()){
+                w[1] = -72 + rangeDistanceleft();
+                w[0] = -72 + rangeDistancefront();
+
+            }
+            else {
+                w[1] = 72 - rangeDistanceright();
+                w[0] = -72+rangeDistancefront();
+
+
+            }
+
+        }
+           return new Position(w,orient);
+    }
+
+    public Rover.Position motortoabs(Rover.Position p){
+        double xval = p.returnv()[0]* Math.cos(p.returno()) + p.returnv()[1]*Math.sin(p.returno());
+        double yval = p.returnv()[1]*Math.cos(p.returno()) -  p.returnv()[0]* Math.sin(p.returno());
+        double[] a = {xval,yval,p.returnv()[2]};
+        return new Rover.Position(a,p.returno());
+
+    }
+    public Position abstomotorCoord(Position p){
+        double xval = p.returnv()[0]* Math.cos(p.returno()) - p.returnv()[1]*Math.sin(p.returno());
+        double yval = p.returnv()[1]*Math.cos(p.returno()) +  p.returnv()[0]* Math.sin(p.returno());
+        double[] a = {xval,yval,p.returnv()[2]};
+        return new Position(a,p.returno());
+
+    }
+    public Position move(Position startpos, Position endpos) throws InterruptedException{
+        double orientMotorcoord = 0;
+        Position start = abstomotorCoord(startpos);
+        Position end = abstomotorCoord(endpos);
+        double dify = end.returnv()[1]- start.returnv()[1];
+        double difx = end.returnv()[0]- start.returnv()[0];
+
+
+        if(difx>=0){
+            driveTrainEncoderMovement(0.5,difx,500,100,movements.right);
+
+        }
+        else{
+            driveTrainEncoderMovement(0.5, Math.abs(difx),500,100,movements.left);
+
+
+        }
+        if(dify>=0){
+            driveTrainEncoderMovement(0.5,dify,500,100,movements.forward);
+
+        }
+        else{
+            driveTrainEncoderMovement(0.5, Math.abs(dify),500,100,movements.backward);
+
+
+        }
+        endpos.updateOrient(endpos.returno() + orientMotorcoord);
+        return getCurrentPosition(); //returns abs pos
+    }
+ public Position moveusingvuf( Position endpos) throws InterruptedException {
+     double orientMotorcoord = 0;
+
+     Position end = abstomotorCoord(endpos);
+
+     if(getCurrentPosition().returnv()[0] < end.returnv()[0]) {
+
+         while (getCurrentPosition().returnv()[0] < end.returnv()[0] && central.opModeIsActive()){
+             driveTrainMovement(0.5, movements.right);
+
+         }
+     }
+     else if(getCurrentPosition().returnv()[0] > end.returnv()[0]) {
+
+         while (getCurrentPosition().returnv()[0] > end.returnv()[0] && central.opModeIsActive()){
+             driveTrainMovement(0.5, movements.left);
+
+         }
+     }
+
+     if(getCurrentPosition().returnv()[1] < end.returnv()[1]) {
+
+         while (getCurrentPosition().returnv()[1] < end.returnv()[1] && central.opModeIsActive()){
+             driveTrainMovement(0.5, movements.forward);
+
+         }
+     }
+     else if(getCurrentPosition().returnv()[1] > end.returnv()[1]) {
+
+         while (getCurrentPosition().returnv()[1] > end.returnv()[1] && central.opModeIsActive()){
+             driveTrainMovement(0.5, movements.backward);
+
+         }
+     }
+
+     return getCurrentPosition();
+ }
+
 }

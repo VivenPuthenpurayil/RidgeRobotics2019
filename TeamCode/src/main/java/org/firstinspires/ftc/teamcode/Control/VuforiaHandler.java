@@ -179,13 +179,15 @@ public class VuforiaHandler {
 
 
     }
-    public boolean checkVisibility() throws InterruptedException{
+    public String checkVisibility() throws InterruptedException{
         targetVisible = false;
+        String r = "false";
         for (VuforiaTrackable trackable : allTrackables) {
             if (((VuforiaTrackableDefaultListener)trackable.getListener()).isVisible()) {
                 telemetry.addData("Visible Target", trackable.getName());
                 targetVisible = true;
 
+                r = trackable.getName();
                 // getUpdatedRobotLocation() will return null if no new information is available since
                 // the last time that call was made, or if the trackable is not currently visible.
                 OpenGLMatrix robotLocationTransform = ((VuforiaTrackableDefaultListener)trackable.getListener()).getUpdatedRobotLocation();
@@ -195,7 +197,7 @@ public class VuforiaHandler {
                 break;
             }
         }
-        return targetVisible;
+        return r;
     }
 }
 
