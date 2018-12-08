@@ -800,31 +800,31 @@ public class Rover {
 
      Position end = abstomotorCoord(endpos);
 
-     if(getCurrentPosition().returnv()[0] < end.returnv()[0]) {
+     if(abstomotorCoord(getCurrentPosition()).returnv()[0] < end.returnv()[0]) {
 
-         while (getCurrentPosition().returnv()[0] < end.returnv()[0] && central.opModeIsActive()){
+         while (abstomotorCoord(getCurrentPosition()).returnv()[0] < end.returnv()[0] && central.opModeIsActive()){
              driveTrainMovement(0.5, movements.right);
 
          }
      }
-     else if(getCurrentPosition().returnv()[0] > end.returnv()[0]) {
+     else if(abstomotorCoord(getCurrentPosition()).returnv()[0] > end.returnv()[0]) {
 
-         while (getCurrentPosition().returnv()[0] > end.returnv()[0] && central.opModeIsActive()){
+         while (abstomotorCoord(getCurrentPosition()).returnv()[0] > end.returnv()[0] && central.opModeIsActive()){
              driveTrainMovement(0.5, movements.left);
 
          }
      }
 
-     if(getCurrentPosition().returnv()[1] < end.returnv()[1]) {
+     if(abstomotorCoord(getCurrentPosition()).returnv()[1] < end.returnv()[1]) {
 
-         while (getCurrentPosition().returnv()[1] < end.returnv()[1] && central.opModeIsActive()){
+         while (abstomotorCoord(getCurrentPosition()).returnv()[1] < end.returnv()[1] && central.opModeIsActive()){
              driveTrainMovement(0.5, movements.forward);
 
          }
      }
-     else if(getCurrentPosition().returnv()[1] > end.returnv()[1]) {
+     else if(abstomotorCoord(getCurrentPosition()).returnv()[1] > end.returnv()[1]) {
 
-         while (getCurrentPosition().returnv()[1] > end.returnv()[1] && central.opModeIsActive()){
+         while (abstomotorCoord(getCurrentPosition()).returnv()[1] > end.returnv()[1] && central.opModeIsActive()){
              driveTrainMovement(0.5, movements.backward);
 
          }
