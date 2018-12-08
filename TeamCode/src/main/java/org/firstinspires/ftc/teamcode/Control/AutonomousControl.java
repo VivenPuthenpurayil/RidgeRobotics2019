@@ -19,7 +19,7 @@ public abstract class AutonomousControl extends Central {
     public void angleOfLander() throws InterruptedException {
         double x = runtime.seconds();
         while (runtime.seconds() <= x + 3 &&opModeIsActive()) {
-            while (rob.vuforia.checkVisibility() && opModeIsActive()) {
+            while (!rob.vuforia.checkVisibility().equals("false") && opModeIsActive()) {
                 VectorF translation = rob.vuforia.lastLocation.getTranslation();
                 telemetry.addData("Pos (in)", "{X, Y, Z} = %.1f, %.1f, %.1f",
                         translation.get(0) / mmPerInch, translation.get(1) / mmPerInch, translation.get(2) / mmPerInch);
