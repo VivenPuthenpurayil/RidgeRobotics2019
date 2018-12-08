@@ -32,6 +32,7 @@ public class Test_Movements extends Test {
                 rob.driveTrainMovement(0.5, allMovements[i]);
                 sleep(1000);
                 rob.stopDrivetrain();
+                sleep(1000);
             }
 
             telemetry.addLine("End");

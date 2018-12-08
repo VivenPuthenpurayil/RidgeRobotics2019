@@ -4,12 +4,13 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.Control.Rover;
+import org.firstinspires.ftc.teamcode.Control.TeleOpControl;
 import org.firstinspires.ftc.teamcode.Control.Test;
 
 
 @Autonomous(name = "Arm Test", group = "Test")
 
-public class Test_Arm extends Test {
+public class Test_Arm extends TeleOpControl {
 
     private ElapsedTime runtime = new ElapsedTime();
 
@@ -20,9 +21,37 @@ public class Test_Arm extends Test {
 
         while (opModeIsActive()) {
 
+            standardGamepadData();
+            if (gamepad1.a){
+                rob.arm.setPower(0.4);
+            }
+            else if (gamepad1.y){
+                rob.arm.setPower(-0.4);
+            }
+            else {
+                rob.arm.setPower(0);
+            }
 
 
+            if (gamepad1.b){
+                rob.linear.setPower(0.4);
+            }
+            else if (gamepad1.x){
+                rob.linear.setPower(-0.4);
+            }
+            else {
+                rob.linear.setPower(0);
+            }
 
+            if (gamepad1.dpad_up){
+                rob.collector.setPower(0.7);
+            }
+            else if (gamepad1.dpad_down){
+                rob.collector.setPower(-0.7);
+            }
+            else {
+                rob.collector.setPower(0);
+            }
         }
     }
 

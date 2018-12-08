@@ -220,7 +220,7 @@ public class Rover {
         collector = motor(collectorS, DcMotorSimple.Direction.FORWARD);
 
 
-        encoder(EncoderMode.ON, arm);
+        encoder(EncoderMode.ON, arm, linear);
 
     }
 
