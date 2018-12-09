@@ -807,6 +807,19 @@ public class Rover {
              driveTrainMovement(0.5, movements.backward);
          }
      }
+
+     if(abstomotorCoord(getCurrentPosition()).returno() > endpos.returno()){
+         while(abstomotorCoord(getCurrentPosition()).returno() > endpos.returno()){
+           driveTrainMovement(0.5,movements.cw);
+         }
+
+     }
+     else if(abstomotorCoord(getCurrentPosition()).returno() < endpos.returno()){
+         while(abstomotorCoord(getCurrentPosition()).returno() < endpos.returno()){
+             driveTrainMovement(0.5,movements.ccw);
+         }
+
+     }
      return getCurrentPosition();
  }
 
