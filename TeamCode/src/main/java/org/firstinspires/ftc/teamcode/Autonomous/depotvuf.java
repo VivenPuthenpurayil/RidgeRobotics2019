@@ -19,6 +19,15 @@ public class depotvuf extends  AutonomousControl{
             setup(runtime, Rover.setupType.autonomous);
 
             while (opModeIsActive()) {
+
+                double[] x = new double[3];
+                x[0] = 5;
+                x[1] = 12;
+                x[3] = 12;
+
+                rob.moveusingvuf(new Rover.Position(x,90));
+
+
             }
         }
 

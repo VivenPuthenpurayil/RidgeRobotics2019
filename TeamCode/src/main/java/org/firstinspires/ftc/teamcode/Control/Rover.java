@@ -652,9 +652,10 @@ public class Rover {
 
             Orientation rotation = Orientation.getOrientation(vuforia.lastLocation, EXTRINSIC, XYZ, DEGREES);
 
-            return  vuftopos((double)(translation.get(0)/mmPerInch), (double)(translation.get(1)/mmPerInch) ,(double)(translation.get(2) / mmPerInch), rotation.thirdAngle,vuforia.checkVisibility() );
+            return  vuftopos((double)(translation.get(0)/mmPerInch), (double)(translation.get(1)/mmPerInch) ,(double)(translation.get(2) / mmPerInch),
+                    rotation.thirdAngle,vuforia.checkVisibility() );
         }
- else{
+       else{
             return null;
         }
         }
@@ -691,77 +692,60 @@ public class Rover {
     }
 
     public  Position currentabspossensors(int orient){
-        //only use when snapped to nearest axis
         double[] w = new double[3];
         if(orient == 90){
           if(rangeDistanceright() > rangeDistanceleft()){
               w[0] = -72 + rangeDistanceleft();
               w[1] = 72-rangeDistancefront();
-
           }
           else {
               w[0] = 72 - rangeDistanceright();
               w[1] = 72-rangeDistancefront();
-
-
           }
-
         }
         if(orient == 0){
             if(rangeDistanceright() > rangeDistanceleft()){
                 w[1] = 72 - rangeDistanceleft();
                 w[0] = 72-rangeDistancefront();
-
             }
             else {
                 w[1] = -72 + rangeDistanceright();
                 w[0] = 72-rangeDistancefront();
-
-
             }
-
         }
         if(orient == -90){
             if(rangeDistanceright() > rangeDistanceleft()){
                 w[0] = 72 - rangeDistanceleft();
                 w[1] = -72 + rangeDistancefront();
-
             }
             else {
                 w[0] = -72 + rangeDistanceright();
                 w[1] = -72+rangeDistancefront();
-
-
             }
-
         }
         if(orient == 180){
             if(rangeDistanceright() > rangeDistanceleft()){
                 w[1] = -72 + rangeDistanceleft();
                 w[0] = -72 + rangeDistancefront();
-
             }
             else {
                 w[1] = 72 - rangeDistanceright();
                 w[0] = -72+rangeDistancefront();
-
-
             }
-
         }
            return new Position(w,orient);
     }
 
-    public Rover.Position motortoabs(Rover.Position p){
-        double xval = p.returnv()[0]* Math.cos(p.returno()) + p.returnv()[1]*Math.sin(p.returno());
-        double yval = p.returnv()[1]*Math.cos(p.returno()) -  p.returnv()[0]* Math.sin(p.returno());
+    public Position motortoabs(Rover.Position p){
+        double xval = p.returnv()[0]* Math.cos(Math.toRadians(p.returno()-90)) + p.returnv()[1]*Math.sin(Math.toRadians(p.returno()-90));
+        double yval = p.returnv()[1]*Math.cos(Math.toRadians(p.returno()-90)) -  p.returnv()[0]* Math.sin(Math.toRadians(p.returno()-90));
         double[] a = {xval,yval,p.returnv()[2]};
         return new Rover.Position(a,p.returno());
 
     }
     public Position abstomotorCoord(Position p){
-        double xval = p.returnv()[0]* Math.cos(p.returno()) - p.returnv()[1]*Math.sin(p.returno());
-        double yval = p.returnv()[1]*Math.cos(p.returno()) +  p.returnv()[0]* Math.sin(p.returno());
+        double xval = p.returnv()[0]* Math.cos(Math.toRadians(p.returno()-90)) - p.returnv()[1]*Math.sin(Math.toRadians(p.returno()-90));
+        double yval = p.returnv()[1]*Math.cos(Math.toRadians(p.returno()-90)) +  p.returnv()[0]* Math.sin(Math.toRadians(p.returno()-90));
         double[] a = {xval,yval,p.returnv()[2]};
         return new Position(a,p.returno());
 
@@ -773,45 +757,33 @@ public class Rover {
         double dify = end.returnv()[1]- start.returnv()[1];
         double difx = end.returnv()[0]- start.returnv()[0];
 
-
         if(difx>=0){
             driveTrainEncoderMovement(0.5,difx,500,100,movements.right);
-
         }
         else{
             driveTrainEncoderMovement(0.5, Math.abs(difx),500,100,movements.left);
-
-
         }
         if(dify>=0){
             driveTrainEncoderMovement(0.5,dify,500,100,movements.forward);
-
         }
         else{
             driveTrainEncoderMovement(0.5, Math.abs(dify),500,100,movements.backward);
-
-
         }
         endpos.updateOrient(endpos.returno() + orientMotorcoord);
         return getCurrentPosition(); //returns abs pos
     }
  public Position moveusingvuf( Position endpos) throws InterruptedException {
      double orientMotorcoord = 0;
-
      Position end = abstomotorCoord(endpos);
-
      if(abstomotorCoord(getCurrentPosition()).returnv()[0] < end.returnv()[0]) {
-
          while (abstomotorCoord(getCurrentPosition()).returnv()[0] < end.returnv()[0] && central.opModeIsActive()){
              driveTrainMovement(0.5, movements.right);
-
          }
      }
      else if(abstomotorCoord(getCurrentPosition()).returnv()[0] > end.returnv()[0]) {
 
          while (abstomotorCoord(getCurrentPosition()).returnv()[0] > end.returnv()[0] && central.opModeIsActive()){
              driveTrainMovement(0.5, movements.left);
-
          }
      }
 
@@ -819,17 +791,14 @@ public class Rover {
 
          while (abstomotorCoord(getCurrentPosition()).returnv()[1] < end.returnv()[1] && central.opModeIsActive()){
              driveTrainMovement(0.5, movements.forward);
-
          }
      }
      else if(abstomotorCoord(getCurrentPosition()).returnv()[1] > end.returnv()[1]) {
 
          while (abstomotorCoord(getCurrentPosition()).returnv()[1] > end.returnv()[1] && central.opModeIsActive()){
              driveTrainMovement(0.5, movements.backward);
-
          }
      }
-
      return getCurrentPosition();
  }
 
