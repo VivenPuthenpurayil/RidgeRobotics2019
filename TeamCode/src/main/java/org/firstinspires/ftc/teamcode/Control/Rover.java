@@ -770,6 +770,14 @@ public class Rover {
             driveTrainEncoderMovement(0.5, Math.abs(dify),500,100,movements.backward);
         }
         endpos.updateOrient(endpos.returno() + orientMotorcoord);
+        if(endpos.returno()>startpos.returno()){
+                turn((float)(endpos.returno()-startpos.returno()),turnside.ccw,0.5,axis.center);
+
+        }
+        else if(endpos.returno()<startpos.returno()) {
+            turn((float)(Math.abs(endpos.returno()-startpos.returno())),turnside.cw,0.5,axis.center);
+
+        }
         return getCurrentPosition(); //returns abs pos
     }
  public Position moveusingvuf( Position endpos) throws InterruptedException {

@@ -5,15 +5,16 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.Control.AutonomousControl;
 import org.firstinspires.ftc.teamcode.Control.Rover;
-
-@Autonomous(name="Depotvuf", group ="Smart")
-
-
-public class depotvuf extends  AutonomousControl{
+ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 
 
-        private ElapsedTime runtime = new ElapsedTime();
+@Autonomous(name="moveab", group ="Smart")
+public class moveab extends AutonomousControl{
+
+
+
+    private ElapsedTime runtime = new ElapsedTime();
         @Override
         public void runOpMode() throws InterruptedException {
             setup(runtime, Rover.setupType.autonomous);
@@ -21,14 +22,20 @@ public class depotvuf extends  AutonomousControl{
             while (opModeIsActive()) {
 
                 double[] x = new double[3];
+                x[0] = -40;
+                x[1] = -10;
+                x[2] = 12;
+                double[] y = new double[3];
                 x[0] = 5;
-                x[1] = 12;
+                x[1] = -60;
                 x[2] = 12;
 
-                rob.moveusingvuf(new Rover.Position(x,90));
+                rob.move(new Rover.Position(y,90),new Rover.Position(x,90));
 
 
             }
         }
 
-}
+    }
+
+
