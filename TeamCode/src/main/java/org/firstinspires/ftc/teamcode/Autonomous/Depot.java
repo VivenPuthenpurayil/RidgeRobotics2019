@@ -23,25 +23,22 @@ public class Depot extends AutonomousControl {
             rob.turn(90,Rover.turnside.ccw,0.2,Rover.axis.center );
 
             while(rob.rangeDistancefront() > 3 && opModeIsActive()){
-                rob.driveTrainEncoderMovement(0.3, 3, 6, 200, Rover.movements.forward);
-
+rob.driveTrainMovement(0.5, Rover.movements.forward);
             }
 
             rob.turn(135,Rover.turnside.cw,0.2,Rover.axis.center );
 
 
             while(rob.rangeDistancefront() > 24 && opModeIsActive()){
-                rob.driveTrainEncoderMovement(0.3, 3, 6, 200, Rover.movements.forward);
+                rob.driveTrainMovement(0.5, Rover.movements.forward);
 
             }
 
             sleep(1000);
-
+sleep(100);
             while(rob.rangeDistanceback() > 46 && opModeIsActive()){
-                rob.driveTrainEncoderMovement(0.3, 3, 6, 200, Rover.movements.backward);
+                rob.driveTrainMovement(0.5, Rover.movements.backward);
             }
-
-
 
         }
     }
