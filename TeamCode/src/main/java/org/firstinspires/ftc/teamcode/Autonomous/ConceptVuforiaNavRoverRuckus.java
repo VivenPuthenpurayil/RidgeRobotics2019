@@ -89,7 +89,7 @@ import static org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocaliz
  *
  * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list.
- *
+ *c
  * IMPORTANT: In order to use this OpMode, you need to obtain your own Vuforia license key as
  * is explained below.
  */
