@@ -9,7 +9,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.Control.Test;
 
 
-@Autonomous(name = "Rack And Pinion", group = "Smart")
+@Autonomous(name = "Rack And Pinion Test", group = "Smart")
 
 public class Test_RackAndPinion extends Test {
 

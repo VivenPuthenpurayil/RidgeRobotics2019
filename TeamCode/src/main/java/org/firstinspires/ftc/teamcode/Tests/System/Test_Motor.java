@@ -39,7 +39,7 @@ public class Test_Motor extends TeleOpControl {
             else if (gamepad1.y){ //encoder test
                 telemetry.addLine("Encoder Test");
                 telemetry.update();
-                rob.encoderMovement(0.8, 4.0*3.14165, 10, 0, Rover.movements.rackExtend, motor);
+                rob.encoderMovement(0.8, 1, 10, 0, Rover.movements.rackExtend, motor);
             }
         }
 

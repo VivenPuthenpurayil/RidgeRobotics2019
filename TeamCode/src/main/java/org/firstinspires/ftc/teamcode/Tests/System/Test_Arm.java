@@ -22,15 +22,16 @@ public class Test_Arm extends TeleOpControl {
         while (opModeIsActive()) {
 
             standardGamepadData();
-            if (gamepad1.a){
-                rob.arm.setPower(0.4);
+            if (gamepad1.dpad_down){
+                rob.arm.setPower(0.3);
             }
-            else if (gamepad1.y){
-                rob.arm.setPower(-0.4);
+            else if (gamepad1.dpad_up){
+                rob.arm.setPower(-0.1);
             }
             else {
                 rob.arm.setPower(0);
             }
+
 
 
             if (gamepad1.b){
@@ -43,10 +44,10 @@ public class Test_Arm extends TeleOpControl {
                 rob.linear.setPower(0);
             }
 
-            if (gamepad1.dpad_up){
+            if (gamepad1.a){
                 rob.collector.setPower(0.7);
             }
-            else if (gamepad1.dpad_down){
+            else if (gamepad1.y){
                 rob.collector.setPower(-0.7);
             }
             else {

@@ -26,6 +26,13 @@ import static org.firstinspires.ftc.robotcore.external.navigation.AngleUnit.DEGR
 import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.XYZ;
 import static org.firstinspires.ftc.robotcore.external.navigation.AxesReference.EXTRINSIC;
 import static org.firstinspires.ftc.teamcode.Control.Constants.*;
+import static org.firstinspires.ftc.teamcode.Control.Rover.movements.back2;
+import static org.firstinspires.ftc.teamcode.Control.Rover.movements.backward;
+import static org.firstinspires.ftc.teamcode.Control.Rover.movements.ccw;
+import static org.firstinspires.ftc.teamcode.Control.Rover.movements.cw;
+import static org.firstinspires.ftc.teamcode.Control.Rover.movements.forward;
+import static org.firstinspires.ftc.teamcode.Control.Rover.movements.left;
+import static org.firstinspires.ftc.teamcode.Control.Rover.movements.right;
 
 public class Rover {
 
@@ -43,6 +50,10 @@ public class Rover {
 
                 case latching:
                     setupLatching();
+                    break;
+
+                case latchingTele:
+                    setupLatchingTele();
                     break;
 
                 case mineralControl:
@@ -67,9 +78,9 @@ public class Rover {
                     setupIMU();
                     setupDrivetrain();
                     setupMineralControl();
-                    setupVuforia();
-                    setupPhone();
-                    setupSensors();
+                    //setupVuforia();
+                   // setupPhone();
+                   // setupSensors();
                     break;
 
 
@@ -79,6 +90,16 @@ public class Rover {
         central.telemetry.addLine(i.toString());
         central.telemetry.update();
 
+
+    }
+
+    public void setupLatchingTele() throws InterruptedException {
+        rack = motor(rackS, DcMotorSimple.Direction.FORWARD);
+
+        deployingLimit = hardwareMap.digitalChannel.get(deployingLimitS);//name it limit in config pls <3
+        latchingLimit = hardwareMap.digitalChannel.get(latchingLimitS);
+
+        encoder(EncoderMode.ON, rack);
 
     }
 
@@ -154,6 +175,15 @@ public class Rover {
 
 
     //-----         LATCHING FUNCTIONS          --------------
+    public void latchInit() throws InterruptedException{
+        while(!latchingLimit.getState())
+        {
+            anyMovement(0.8, Rover.movements.rackCompress, rack);
+        }
+        rack.setPower(0);
+        central.telemetry.addLine("Latched");
+        central.telemetry.update();
+    }
 
     public void latch() throws InterruptedException{
         while(!latchingLimit.getState() && central.opModeIsActive())
@@ -161,6 +191,8 @@ public class Rover {
             anyMovement(0.8, Rover.movements.rackCompress, rack);
         }
         rack.setPower(0);
+        central.telemetry.addLine("Latched");
+        central.telemetry.update();
     }
     public void deploy() throws InterruptedException{
         while(!deployingLimit.getState() && central.opModeIsActive())
@@ -168,9 +200,13 @@ public class Rover {
             anyMovement(0.8, movements.rackExtend, rack);
         }
         rack.setPower(0);
-        driveTrainEncoderMovement(0.3, 6, 6, 200, movements.right);
-        driveTrainEncoderMovement(0.3, 3, 6, 200, movements.forward);
-        driveTrainEncoderMovement(0.3, 6, 6, 200, movements.left);
+        //driveTrainEncoderMovement(0.8, 0.5, 3, 50, cw);
+        driveTrainEncoderMovement(0.8, 2, 3, 50, backward);
+        driveTrainEncoderMovement(0.8, 20, 3, 50, right);
+        driveTrainEncoderMovement(0.8, 5, 3, 50, forward);
+        driveTrainEncoderMovement(0.8, 8, 3, 50, left);
+        //driveTrainEncoderMovement(0.8, 5, 3, 50, ccw);
+        //driveTrainEncoderMovement(0.8, 2, 3, 50, backward);
 
     }
 
@@ -222,12 +258,12 @@ public class Rover {
     public void setupLatching() throws InterruptedException {
         rack = motor(rackS, DcMotorSimple.Direction.FORWARD);
 
-        //deployingLimit = hardwareMap.digitalChannel.get(deployingLimitS);//name it limit in config pls <3
-        //latchingLimit = hardwareMap.digitalChannel.get(latchingLimitS);
+        deployingLimit = hardwareMap.digitalChannel.get(deployingLimitS);//name it limit in config pls <3
+        latchingLimit = hardwareMap.digitalChannel.get(latchingLimitS);
 
         encoder(EncoderMode.ON, rack);
 
-        //latch();
+        latchInit();
     }
 
     public void setupMineralControl() throws InterruptedException{
@@ -249,12 +285,12 @@ public class Rover {
         parameters.accelUnit = BNO055IMUImpl.AccelUnit.METERS_PERSEC_PERSEC;
         parameters.calibrationDataFile = "AdafruitIMUCalibration.json"; // see the calibration sample opmode
         parameters.loggingEnabled = true; //copypasted from BNO055IMU sample code, no clue what this does
-        parameters.loggingTag = "IMU"; //copypasted from BNO055IMU sample code, no clue what this does
+        parameters.loggingTag = "imu"; //copypasted from BNO055IMU sample code, no clue what this does
         imu = hardwareMap.get(BNO055IMUImpl.class, imuS);
         imu.initialize(parameters);
         initorient = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle;
         central.telemetry.addData("IMU status", imu.getSystemStatus());
-        central.telemetry.update();
+
 
     }
 
@@ -342,7 +378,7 @@ public class Rover {
 
             for (DcMotor motor : drivetrain){
                 int x = Arrays.asList(drivetrain).indexOf(motor);
-                targets[x] = motor.getCurrentPosition() + (int) (signs[x] * distance * COUNTS_PER_INCH);
+                targets[x] = motor.getCurrentPosition() + (int) (signs[x] * distance *COUNTS_PER_MOTOR_NEVEREST);
             }
             for (DcMotor motor: drivetrain){
                 int x = Arrays.asList(drivetrain).indexOf(motor);
@@ -398,7 +434,7 @@ public class Rover {
 
             for (DcMotor motor : motors){
                 int x = Arrays.asList(motors).indexOf(motor);
-                targets[x] = motor.getCurrentPosition() + (int) (signs[x] * distance * COUNTS_PER_INCH);
+                targets[x] = motor.getCurrentPosition() + (int) (signs[x] * distance * 4.0 * 3.14165 * COUNTS_PER_INCH);
             }
             for (DcMotor motor: motors){
                 int x = Arrays.asList(motors).indexOf(motor);
@@ -523,7 +559,7 @@ public class Rover {
         ON, OFF
     }
     public enum setupType{
-        autonomous, drive, latching, imu, marker, phoneswivel, sensors, mineralControl, teleop, none, vuforia;
+        autonomous, drive, latching, latchingTele, imu, marker, phoneswivel, sensors, mineralControl, teleop, none, vuforia;
     }
 
 
@@ -561,14 +597,14 @@ public class Rover {
         tl(1, 0, 0, -1),
         br(-1, 0, 0, 1),
         bl(0, 1, -1, 0),
-        ccw(-1, -1, -1, -1),
-        cw(1, 1, 1, 1),
+        ccw(1, 1, 1, 1),
+        cw(-1, -1, -1, -1),
         cwback(-1,-1,0,0),
         ccwback(1,1,0,0),
         cwfront(0,0,-1,-1),
         ccwfront(0,0,1,1),
-        rackExtend(-1),
-        rackCompress(1),
+        rackExtend(1),
+        rackCompress(-1),
         forward2(1, -1),
         back2(-1, 1),
         cw2(1,1),

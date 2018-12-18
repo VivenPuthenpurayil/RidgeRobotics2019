@@ -22,7 +22,7 @@ import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.YZX;
 import static org.firstinspires.ftc.robotcore.external.navigation.AxesReference.EXTRINSIC;
 import static org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer.CameraDirection.BACK;
 import static org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer.CameraDirection.FRONT;
-@Autonomous(name="Auto Small Bot", group ="Smart")
+@Autonomous(name="Autonomous Small Bot", group ="Smart")
 public class AutonomousSmallBot extends AutonomousControl {
     private ElapsedTime runtime = new ElapsedTime();
 

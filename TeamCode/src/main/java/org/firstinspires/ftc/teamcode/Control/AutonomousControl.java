@@ -26,7 +26,8 @@ public abstract class AutonomousControl extends Central {
 
                 // express the rotation of the robot in degrees.
                 Orientation rotation = Orientation.getOrientation(rob.vuforia.lastLocation, EXTRINSIC, XYZ, DEGREES);
-                telemetry.addData("Rot (deg)", "{Roll, Pitch, Heading} = %.0f, %.0f, %.0f", rotation.firstAngle, rotation.secondAngle, rotation.thirdAngle);
+                telemetry.addData("Rot (deg)", "{Roll, Pitch, Heading} = %.0f, %.0f, %.0f", rotation.firstAngle, rotation.secondAngle,
+                        rotation.thirdAngle);
                 telemetry.update();
                 if (rotation.thirdAngle > 25 && opModeIsActive()) {
                     rob.driveTrainMovement(0.2, Rover.movements.cw);
@@ -149,7 +150,9 @@ public abstract class AutonomousControl extends Central {
         detector.ratioScorer.perfectRatio = 1.0;
         detector.enable();
 
-        switch(detector.getCurrentOrder()){
+        telemetry.addData("Sample: ", detector.getCurrentOrder().name());
+        telemetry.update();
+        /*switch(detector.getCurrentOrder()){
             case LEFT:
                 leftPosition();
                 knockingOffLeft();
@@ -161,7 +164,7 @@ public abstract class AutonomousControl extends Central {
                 knockingOffRight();
             case UNKNOWN:
                 sampling();
-        }
+        }*/
 
     }
 
